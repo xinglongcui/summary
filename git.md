@@ -21,16 +21,20 @@
 - git checkout [version] [FILE]
 - git add
 - git commit
-## More TODO
 
-# insert pic to markdown files
-## insert internet pics
-![Alt internet](https://github.com/xinglongcui/explorer/blob/master/Folder.jpg "internet jpg") 
+# create a new repository on the command line
+- echo "# code_piece" >> README.md
+- git init
+- git add README.md
+- git commit -m "first commit"
+- git remote add origin https://github.com/xinglongcui/code_piece.git
+- git push -u origin master
+# push an existing repository from the command line
+- git remote add origin https://github.com/xinglongcui/code_piece.git
+- git push -u origin master
 
-## insert local pics
-![avatar](italia.jpg "local 1") 
-![avatar](2.jpg "local 2") 
-![](italia.jpg "local 3") 
-![](2.jpg "local 4") 
-![Alt internet](2.jpg "local 5") 
-![](resource/Folder.jpg "local 6") 
+# rename files in in repository
+- git mv [OLD_FILE] [NEW_FILE]
+- git add [NEW_FILE]
+- git commit -m "log" [NEW_FILE]
+- git push 
