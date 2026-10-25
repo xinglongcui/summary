@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<title>Agentic RL：网络分层拓扑与业务流量映射（V2）</title>
+<style>
+:root{--bg:#f5f7fb;--paper:#fff;--ink:#183046;--sub:#5b6f82;--line:#dbe4ee;--soft:#eef5fa;--soft2:#f8fbfd;--blue:#0c7895;--green:#17745f;--orange:#b4681f;--purple:#7656a8;--red:#b34d4d}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.75 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
+header{background:linear-gradient(115deg,#102d4c,#0a6880);color:#fff;padding:46px 22px}header>div,main,footer{max-width:1100px;margin:auto}h1{font-size:clamp(1.8rem,4vw,2.6rem);line-height:1.28;margin:0 0 12px}header p{margin:0;opacity:.92;max-width:920px}
+main{padding:26px 18px 60px;display:grid;grid-template-columns:220px minmax(0,1fr);gap:24px}.toc{position:sticky;top:18px;align-self:start;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px}.toc a{display:block;padding:6px 2px;color:var(--sub);text-decoration:none}.toc a:hover{color:var(--blue)}.toc strong{display:block;margin-bottom:8px}
+article section{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:24px 28px;margin-bottom:18px;box-shadow:0 2px 10px rgba(16,30,52,.04)}h2{font-size:1.42rem;line-height:1.35;margin:0 0 14px;color:#143854}h3{font-size:1.08rem;margin:20px 0 8px;color:#143854}p{margin:9px 0 14px}.callout{background:var(--soft);border-left:4px solid var(--blue);padding:14px 16px;border-radius:8px;margin:15px 0;font-weight:650}.warn{background:#fff6e8;border:1px solid #ead6b6;padding:13px 15px;border-radius:10px;margin:15px 0}.tag{display:inline-block;font-size:12px;font-weight:700;padding:2px 6px;border-radius:4px;background:var(--soft);color:var(--blue);margin-right:6px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.tile{border:1px solid var(--line);border-radius:10px;padding:13px 15px;background:var(--soft2)}.tile b{display:block;margin-bottom:6px}
+.table-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px;margin:14px 0}table{width:100%;min-width:760px;border-collapse:collapse;font-size:.94rem}th,td{padding:10px 12px;vertical-align:top;border-bottom:1px solid var(--line);text-align:left}th{white-space:nowrap;background:#eaf2f8;color:#29435c}tr:last-child td{border-bottom:0}
+.diagram{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--soft2);overflow:auto}.diagram svg{display:block;width:100%;min-width:860px;height:auto}
+ul,ol{padding-left:24px;margin:8px 0 12px}li{margin:5px 0}code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em}.small{font-size:13px;color:var(--sub)}
+footer{max-width:1100px;margin:auto;padding:0 22px 50px;color:var(--sub);font-size:13px}
+@media (max-width:860px){main{display:block;padding:16px 12px 42px}.toc{position:static;display:flex;gap:14px;overflow:auto;white-space:nowrap;margin-bottom:14px}.toc strong{display:none}.grid2{grid-template-columns:1fr}article section{padding:20px 16px}}
+@media (prefers-color-scheme:dark){:root{--bg:#0d1826;--paper:#16283c;--ink:#e3edf7;--sub:#b1c3d2;--line:#344a60;--soft:#203a4a;--soft2:#192d41}th{background:#21384e;color:#dceaf7}.warn{background:#382d20;border-color:#6c5431}header{background:linear-gradient(115deg,#0b243b,#0e4d64)}}
+
+/* V2: tiered topology diagrams */
+.physical-diagram{border:1px solid var(--line);border-radius:12px;padding:8px;background:#f7fafc;overflow-x:auto;margin:13px 0}.physical-diagram svg{display:block;width:100%;min-width:930px;height:auto}.tier-intro{background:var(--soft);padding:12px 15px;border-radius:8px;margin:12px 0}.tier-caption{font-size:13px;color:var(--sub);margin-bottom:19px}.qoshigh{font-weight:750;color:#087f6e}.qosmid{font-weight:750;color:#95612e}.qoslow{font-weight:750;color:#655199}.source-list li{overflow-wrap:anywhere}.mathline{font:650 16px/1.5 Georgia,serif;text-align:center;padding:14px;background:var(--soft);border-radius:10px;margin:12px 0}
+@media(prefers-color-scheme:dark){.physical-diagram{background:#eaf3f7}.qoshigh{color:#7cd5bf}.qosmid{color:#e8b77b}.qoslow{color:#baa5ec}}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Agentic RL：网络分层架构与流量映射（V2）</h1>
+    <p>补充一张更明确的网络架构图，并把各种流量分别归到 <b>Scale-up</b>、<b>Scale-out</b>、<b>机头/In-band 网络</b>、<b>OOB 带外管理网络</b>、<b>业务/服务网络</b>、<b>存储网络</b>。重点回答：哪些流量绝对不能跑在机头网络，哪些流量可以共享，哪些需要优先隔离。</p>
+  </div>
+</header>
+<main>
+  <nav class="toc">
+    <strong>目录（V2 增强版）</strong>
+    <a href="#answer">01 直接结论</a>
+    <a href="#diagram">02 网络架构图</a>
+    <a href="#nets">03 六类逻辑网络定义</a>
+    <a href="#flows">04 流量映射表</a>
+    <a href="#rules">05 设计规则</a>
+    <a href="#examples">06 两种典型部署</a><a href="#topologies">07 机柜/Row/Pod</a><a href="#qos">08 流量 QoS</a><a href="#capacity">09 容量示例</a><a href="#references">10 一手资料</a>
+  </nav>
+  <article>
+    <section id="answer">
+      <h2>01｜直接结论</h2>
+      <div class="callout">Agentic RL 不是只有“一张训练网”。至少要逻辑区分 <b>Scale-up GPU 网络</b>、<b>Scale-out RDMA/数据平面网络</b>、<b>机头/In-band 网络</b>、<b>OOB 带外管理网络</b>、<b>业务/服务网络</b>、<b>存储网络</b>。其中：<b>训练 Collective、权重同步、跨节点 KV/状态搬运</b> 不应该跑在机头网络；<b>Head/In-band 管理网络负责控制面；BMC 由 OOB 带外网络单独承载</b>。</div>
+      <div class="grid2">
+        <div class="tile"><b>Scale-up</b>节点内或超节点内的 GPU 紧耦合网络，例如 NVLink/NVSwitch/UALink。承载 TP/EP/PP 等高频张量通信。</div>
+        <div class="tile"><b>Scale-out</b>节点间高带宽数据平面网络，例如 IB、RoCE、AI Ethernet。承载跨节点训练通信、权重同步、部分跨节点状态流。</div>
+        <div class="tile"><b>机头/In-band 管理网络</b>承载 Head Node、Slurm/K8s/Ray 控制、SSH、监控等。<b>BMC/IPMI/Redfish 应另归 OOB 带外管理网络</b>，两者不能混为一谈。</div>
+        <div class="tile"><b>业务/服务网络</b>CPU Sandbox、Mock API、DB、Reward Service、Web Service 之间的东西向 RPC。关注并发、RTT、长尾。</div>
+      </div>
+      <div class="warn"><b>最常见错误：</b>把 <b>Policy Weight Sync</b>、<b>Checkpoint 大文件</b>、<b>Sandbox Tool 大量结果</b> 也塞到机头网络。这样很容易把调度、健康检查和控制面一起拖垮。</div>
+    </section>
+
+    <section id="diagram">
+      <h2>02｜网络架构图</h2>
+      <div class="diagram">
+        <svg viewBox="0 0 1080 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Agentic RL 网络架构图，包含 Scale-up、Scale-out、机头网络、业务网络和存储网络，以及各类流量的归属">
+          <defs>
+            <marker id="arrB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#0c7895"/></marker>
+            <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#17745f"/></marker>
+            <marker id="arrO" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#b4681f"/></marker>
+            <marker id="arrP" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#7656a8"/></marker>
+            <marker id="arrR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#b34d4d"/></marker>
+          </defs>
+
+          <rect x="20" y="20" width="1040" height="680" rx="18" fill="none" stroke="#afc1d0" stroke-dasharray="6 6"/>
+
+          <text x="540" y="50" text-anchor="middle" font-size="24" font-weight="700" fill="#183046">Agentic RL 参考网络架构</text>
+
+          <!-- Scale-up domains -->
+          <rect x="50" y="100" width="380" height="220" rx="16" fill="#e7f3f8" stroke="#7aaec1" stroke-width="2"/>
+          <text x="240" y="128" text-anchor="middle" font-size="20" font-weight="700" fill="#183046">Training GPU Pool</text>
+          <text x="240" y="150" text-anchor="middle" font-size="12" fill="#496175">内部：Scale-up Fabric</text>
+          <rect x="85" y="180" width="120" height="70" rx="10" fill="#fff" stroke="#7aaec1"/>
+          <text x="145" y="208" text-anchor="middle" font-size="14" font-weight="700" fill="#183046">GPU Group A</text>
+          <text x="145" y="228" text-anchor="middle" font-size="11" fill="#5b6f82">TP/EP/PP</text>
+          <rect x="275" y="180" width="120" height="70" rx="10" fill="#fff" stroke="#7aaec1"/>
+          <text x="335" y="208" text-anchor="middle" font-size="14" font-weight="700" fill="#183046">GPU Group B</text>
+          <text x="335" y="228" text-anchor="middle" font-size="11" fill="#5b6f82">DP/Shard</text>
+          <line x1="205" y1="215" x2="275" y2="215" stroke="#0c7895" stroke-width="4" marker-end="url(#arrB)"/>
+          <line x1="275" y1="230" x2="205" y2="230" stroke="#0c7895" stroke-width="4" marker-end="url(#arrB)"/>
+          <text x="240" y="265" text-anchor="middle" font-size="11" fill="#0c7895">G1 训练 Collective</text>
+
+          <rect x="650" y="100" width="380" height="220" rx="16" fill="#e7f3f8" stroke="#7aaec1" stroke-width="2"/>
+          <text x="840" y="128" text-anchor="middle" font-size="20" font-weight="700" fill="#183046">Rollout GPU Pool</text>
+          <text x="840" y="150" text-anchor="middle" font-size="12" fill="#496175">内部：Scale-up Fabric（或单机）</text>
+          <rect x="685" y="180" width="120" height="70" rx="10" fill="#fff" stroke="#7aaec1"/>
+          <text x="745" y="208" text-anchor="middle" font-size="14" font-weight="700" fill="#183046">Prefill</text>
+          <text x="745" y="228" text-anchor="middle" font-size="11" fill="#5b6f82">可与 Decode 共址</text>
+          <rect x="875" y="180" width="120" height="70" rx="10" fill="#fff" stroke="#7aaec1"/>
+          <text x="935" y="208" text-anchor="middle" font-size="14" font-weight="700" fill="#183046">Decode</text>
+          <text x="935" y="228" text-anchor="middle" font-size="11" fill="#5b6f82">KV Cache</text>
+          <line x1="805" y1="215" x2="875" y2="215" stroke="#17745f" stroke-width="4" marker-end="url(#arrG)"/>
+          <text x="840" y="265" text-anchor="middle" font-size="11" fill="#17745f">O1 可选 P→D KV Transfer</text>
+
+          <!-- Scale-out fabric -->
+          <rect x="190" y="355" width="700" height="70" rx="18" fill="#e8f5ee" stroke="#79b79f" stroke-width="2"/>
+          <text x="540" y="383" text-anchor="middle" font-size="20" font-weight="700" fill="#183046">Scale-out Data Fabric</text>
+          <text x="540" y="406" text-anchor="middle" font-size="12" fill="#496175">IB / RoCE / AI Ethernet · 跨节点训练通信 / 权重同步 / 可选远程状态</text>
+
+          <!-- Connections to scale-out -->
+          <line x1="240" y1="320" x2="240" y2="355" stroke="#0c7895" stroke-width="4" marker-end="url(#arrB)"/>
+          <text x="252" y="343" font-size="11" fill="#0c7895">G1 跨节点 TP/EP/DP</text>
+          <line x1="840" y1="320" x2="840" y2="355" stroke="#17745f" stroke-width="4" marker-end="url(#arrG)"/>
+          <text x="852" y="343" font-size="11" fill="#17745f">F8 权重同步 / O2 状态</text>
+          <line x1="430" y1="210" x2="650" y2="210" stroke="#17745f" stroke-width="5" marker-end="url(#arrG)"/>
+          <text x="540" y="195" text-anchor="middle" font-size="12" fill="#17745f">F8 Policy Weight Sync（可直连或经 Scale-out）</text>
+
+          <!-- service network -->
+          <rect x="190" y="470" width="700" height="70" rx="18" fill="#fff1e5" stroke="#d9ac79" stroke-width="2"/>
+          <text x="540" y="498" text-anchor="middle" font-size="20" font-weight="700" fill="#183046">Service / Business Network</text>
+          <text x="540" y="521" text-anchor="middle" font-size="12" fill="#496175">Sandbox、Mock API、DB、Reward、Trajectory Buffer 的业务流量</text>
+
+          <!-- CPU pools -->
+          <rect x="70" y="580" width="280" height="85" rx="14" fill="#fff" stroke="#d9ac79" stroke-width="2"/>
+          <text x="210" y="611" text-anchor="middle" font-size="17" font-weight="700" fill="#183046">Sandbox / Env Pool</text>
+          <text x="210" y="633" text-anchor="middle" font-size="12" fill="#5b6f82">CPU · microVM · Browser · Mock API</text>
+          <rect x="400" y="580" width="280" height="85" rx="14" fill="#fff" stroke="#d9ac79" stroke-width="2"/>
+          <text x="540" y="611" text-anchor="middle" font-size="17" font-weight="700" fill="#183046">Reward / Buffer</text>
+          <text x="540" y="633" text-anchor="middle" font-size="12" fill="#5b6f82">Trajectory / Verifier / Replay</text>
+          <rect x="730" y="580" width="280" height="85" rx="14" fill="#fff" stroke="#d48e8e" stroke-width="2"/>
+          <text x="870" y="611" text-anchor="middle" font-size="17" font-weight="700" fill="#183046">Head / Mgmt / Storage</text>
+          <text x="870" y="633" text-anchor="middle" font-size="12" fill="#5b6f82">调度 / 监控 / Checkpoint / 镜像</text>
+
+          <!-- service flows -->
+          <line x1="770" y1="250" x2="260" y2="580" stroke="#b4681f" stroke-width="4" marker-end="url(#arrO)"/>
+          <text x="615" y="455" font-size="11" fill="#b4681f">F2 Tool Actions</text>
+          <line x1="260" y1="565" x2="910" y2="250" stroke="#b4681f" stroke-width="4" marker-end="url(#arrO)"/>
+          <text x="640" y="548" font-size="11" fill="#b4681f">F3 Observations</text>
+          <line x1="820" y1="250" x2="540" y2="580" stroke="#7656a8" stroke-width="4" marker-end="url(#arrP)"/>
+          <text x="700" y="455" font-size="11" fill="#7656a8">F4 Trajectory</text>
+          <line x1="540" y1="580" x2="420" y2="300" stroke="#7656a8" stroke-width="4" marker-end="url(#arrP)"/>
+          <text x="460" y="450" font-size="11" fill="#7656a8">F7 Train Batch / Reward</text>
+
+          <!-- mgmt/storage flows -->
+          <line x1="870" y1="580" x2="870" y2="540" stroke="#b34d4d" stroke-width="4" marker-end="url(#arrR)"/>
+          <text x="890" y="560" font-size="11" fill="#b34d4d">O3 Checkpoint / 镜像 / 日志</text>
+          <line x1="870" y1="580" x2="240" y2="140" stroke="#b34d4d" stroke-width="3" stroke-dasharray="7 6" marker-end="url(#arrR)"/>
+          <line x1="870" y1="580" x2="840" y2="140" stroke="#b34d4d" stroke-width="3" stroke-dasharray="7 6" marker-end="url(#arrR)"/>
+          <text x="890" y="430" font-size="11" fill="#b34d4d">机头/管理：调度、健康检查、监控、控制信令</text>
+
+          <!-- legend -->
+          <rect x="24" y="24" width="12" height="12" fill="#0c7895"/><text x="42" y="34" font-size="11" fill="#183046">蓝：训练张量 / 控制</text>
+          <rect x="170" y="24" width="12" height="12" fill="#17745f"/><text x="188" y="34" font-size="11" fill="#183046">绿：权重 / 状态 / KV</text>
+          <rect x="340" y="24" width="12" height="12" fill="#b4681f"/><text x="358" y="34" font-size="11" fill="#183046">橙：工具调用 / 结果</text>
+          <rect x="515" y="24" width="12" height="12" fill="#7656a8"/><text x="533" y="34" font-size="11" fill="#183046">紫：轨迹 / Reward</text>
+          <rect x="660" y="24" width="12" height="12" fill="#b34d4d"/><text x="678" y="34" font-size="11" fill="#183046">红：管理 / 存储</text>
+        </svg>
+      </div>
+      <p class="small">这是一张逻辑参考图。物理上，业务/服务网络与存储网络可能复用同一张以太网；Scale-out 也可能承载部分存储流量。但做容量规划和故障隔离时，建议逻辑上分开看。</p>
+    </section>
+
+    <section id="nets">
+      <h2>03｜六类逻辑网络分别干什么？</h2>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>网络组</th><th>主要对象</th><th>典型协议/介质</th><th>应承载什么</th><th>不该承载什么</th></tr></thead>
+          <tbody>
+            <tr><td><b>Scale-up</b></td><td>单节点/单超节点 GPU</td><td>NVLink/NVSwitch/UALink</td><td>训练 TP/EP/PP、推理 TP/EP、本地 P→D KV</td><td>CPU Sandbox RPC、调度控制、Checkpoint 大文件</td></tr>
+            <tr><td><b>Scale-out</b></td><td>跨节点 GPU / GPU 池</td><td>IB、RoCE、AI Ethernet</td><td>跨节点训练 Collective、Policy Weight Sync、可选远程 KV/状态</td><td>大量机头控制流、低价值背景日志</td></tr>
+            <tr><td><b>机头/In-band 管理网络</b></td><td>调度、运维、Head Node 控制面；BMC 归 OOB</td><td>以太网、管理交换机</td><td>Slurm/K8s/Ray 控制、SSH、业务管理和监控；BMC 属 OOB</td><td>训练大流、权重大文件、KV 迁移、轨迹大对象</td></tr>
+            <tr><td><b>业务/服务网络</b></td><td>CPU 服务、沙箱、DB、Reward</td><td>TCP/HTTP/gRPC</td><td>Tool Action/Observation、Reward RPC、业务状态访问</td><td>高频 GPU 张量 Collective</td></tr>
+            <tr><td><b>存储网络</b></td><td>对象存储、共享文件系统、镜像库</td><td>NFS、对象存储、并行文件系统</td><td>Checkpoint、镜像、日志归档、Snapshot</td><td>细粒度实时控制面</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="flows">
+      <h2>04｜各种流量到底跑在哪一组网络中？</h2>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>流量</th><th>推荐网络归属</th><th>原因</th><th>备注</th></tr></thead>
+          <tbody>
+            <tr><td><b>G1 训练 TP/EP/PP/DP</b></td><td><b>Scale-up + Scale-out</b></td><td>节点内靠 Scale-up，跨节点靠 RDMA/AI Ethernet</td><td>这是最典型训练流量</td></tr>
+            <tr><td><b>G2 Rollout 推理 TP/EP</b></td><td><b>Scale-up</b>；跨节点时可落到 <b>Scale-out</b></td><td>取决于 Rollout Replica 是否跨节点分片</td><td>小模型单机可不需要跨节点</td></tr>
+            <tr><td><b>F8 Policy Weight Sync</b></td><td><b>优先 Scale-out</b></td><td>大体量、周期性、跨资源池</td><td>共址时可能退化为本机 IPC/显存重装</td></tr>
+            <tr><td><b>O1 P→D KV Transfer</b></td><td><b>Scale-up</b> 或 <b>Scale-out</b></td><td>若 P/D 共节点则走本地；分离部署才走跨节点</td><td>不是所有 RL 部署都有这条流</td></tr>
+            <tr><td><b>O2 长程状态恢复 / 远程 KV</b></td><td>本机内存、<b>Scale-out</b> 或 <b>存储网络</b></td><td>要看状态保存在哪里</td><td>不要默认它一定过 GPU 训练网</td></tr>
+            <tr><td><b>F2 Tool Actions</b></td><td><b>业务/服务网络</b></td><td>本质是 RPC/HTTP/gRPC 业务调用</td><td>通常不需要 RDMA</td></tr>
+            <tr><td><b>F3 Tool Results / Observations</b></td><td><b>业务/服务网络</b></td><td>日志、文本、文件、页面结果</td><td>关注 RTT 和长尾</td></tr>
+            <tr><td><b>F4 Trajectory Buffer</b></td><td><b>业务/服务网络</b> 或 <b>Scale-out</b></td><td>取决于 Sample Buffer 是服务化还是贴近 GPU</td><td>数据量中等，常比权重小很多</td></tr>
+            <tr><td><b>F5/F6 Reward / Verifier</b></td><td><b>业务/服务网络</b></td><td>多为服务间交互和验证结果返回</td><td>若 Reward Model 是 GPU 服务，也可接入 Scale-out</td></tr>
+            <tr><td><b>O3 Checkpoint / 镜像 / Snapshot</b></td><td><b>存储网络</b></td><td>大文件、低频、不该干扰控制面</td><td>有些集群物理上与业务网复用</td></tr>
+            <tr><td><b>调度、心跳、监控、SSH（BMC 另走 OOB）</b></td><td><b>机头/管理网络</b></td><td>Head Node 控制面元数据，BMC 单独 OOB</td><td>与大数据面流量隔离</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="warn"><b>一句话记忆：</b><br>
+        <b>张量通信</b> → Scale-up/Scale-out；<br>
+        <b>权重同步</b> → 主要 Scale-out；<br>
+        <b>业务工具调用</b> → 服务网络；<br>
+        <b>Checkpoint/镜像</b> → 存储网络；<br>
+        <b>调度/运维</b> → 机头网络。
+      </div>
+    </section>
+
+    <section id="rules">
+      <h2>05｜设计规则</h2>
+      <ol>
+        <li><b>机头/In-band 管理网络优先承载控制面；BMC 走隔离的 OOB。</b> 任何可预见的大流量都不要默认走机头网络。</li>
+        <li><b>训练数据面和业务服务面要区分。</b> 即使物理共网，也要通过 VLAN/QoS/队列逻辑隔离。</li>
+        <li><b>先判断流量是不是“张量流”。</b> 不是所有 RL 数据都值得放在 RDMA Fabric 上。</li>
+        <li><b>权重同步要单独测。</b> 它可能成为 RL 区别于传统预训练的新增大流量。</li>
+        <li><b>工具 RPC 的问题通常不是带宽，而是 p95/p99。</b> 例如浏览器、编译、DB 查询、外部 Mock 服务容易形成长尾。</li>
+        <li><b>存储流量不要和控制面打架。</b> Checkpoint、镜像拉取、日志归档应该有明确出口。</li>
+      </ol>
+    </section>
+
+    <section id="examples">
+      <h2>06｜两种典型部署怎么映射？</h2>
+      <h3>A. Co-located 方案</h3>
+      <p>Trainer 和 Rollout 复用同一组 GPU。此时：</p>
+      <ul>
+        <li>训练 Collective 主要在 <b>Scale-up/Scale-out</b> 上；</li>
+        <li>Weight Sync 可能退化为本机显存重装，不一定经过交换机；</li>
+        <li>Sandbox / Reward 仍走 <b>业务/服务网络</b>；</li>
+        <li>Checkpoint / 镜像仍走 <b>存储网络</b>；</li>
+        <li>调度、健康检查仍走 <b>Head/In-band 网络</b>；BMC 走独立 OOB。</li>
+      </ul>
+      <h3>B. Disaggregated 方案</h3>
+      <p>Trainer GPU Pool、Rollout GPU Pool、CPU Sandbox Pool 分离。此时：</p>
+      <ul>
+        <li><b>Weight Sync</b> 成为最关键的 <b>Scale-out</b> 流；</li>
+        <li>Rollout ↔ Sandbox 的工具交互主要在 <b>业务/服务网络</b>；</li>
+        <li>若 Prefill/Decode 分离，P→D KV 可能也是 <b>Scale-out</b> 上的重要流量；</li>
+        <li>Trajectory/Reward 在 Buffer 服务化时也更多依赖 <b>业务网</b>；</li>
+        <li>Head/In-band 网络做控制面，不承载 GPU 热数据路径；BMC 走 OOB。</li>
+      </ul>
+      <div class="callout">所以：<b>“整个 RL 的业务流”不是只跑在一张网里，而是跨多张逻辑网络协同。</b> 真正要做网络规划时，建议把每条流量先归类，再映射到物理 NIC、ToR、Spine 和存储出口。</div>
+    </section>
+  
+<section id="topologies">
+<h2>07｜按照单机柜、跨机柜/Row、跨 Pod 划分的物理网络拓扑</h2>
+<div class="tier-intro"><strong>定义与适用范围：</strong>这里的 Rack 是物理机柜，Row 是数据中心机柜排，Pod 是由网络/计算资源组成的拓扑组织单元，不是 UALink Switch API 中的 <code>vPod</code>。本报告的“Scale-up”指低延迟 GPU 紧耦合域；它可能跨机柜，因此<strong>不能机械等同于单机柜</strong>。以 NVIDIA GB200 为例，NVLink 域可覆盖整柜；未来的其他 Scale-up 方案可能跨多机柜。<a href="#ref-nvidia">[S1]</a></div>
+<h3>A. 单机柜：GPU 侧至少区分四种端口语义</h3>
+<div class="physical-diagram"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 390" role="img"><defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#0c7895"/></marker></defs><rect x="3" y="3" width="1094" height="384" rx="14" fill="#f7fafc" stroke="#d5e0ea"/><text x="26" y="27" fill="#213c56" font-size="16" font-weight="bold" text-anchor="start">A · 单机柜：区分 GPU 高速网络、主机业务口、存储口、BMC 口</text><rect x="24" y="65" width="245" height="255" rx="12" fill="#e6f2fa" stroke="#6da4bd" stroke-width="1.5"/><text x="146.5" y="186.5" fill="#213c56" font-size="14" font-weight="bold" text-anchor="middle">训练/推理 GPU 服务器</text><text x="146.5" y="206.5" fill="#4d647a" font-size="11" font-weight="normal" text-anchor="middle">可包含多 GPU + Host CPU</text><rect x="48" y="113" width="197" height="45" rx="12" fill="#fff" stroke="#6da4bd" stroke-width="1.5"/><text x="146.5" y="129.5" fill="#213c56" font-size="14" font-weight="bold" text-anchor="middle">GPU + Scale-up Switch</text><text x="146.5" y="149.5" fill="#4d647a" font-size="11" font-weight="normal" text-anchor="middle">NVLink / UALink</text><rect x="48" y="171" width="197" height="38" rx="12" fill="#e9f4ee" stroke="#72b79d" stroke-width="1.5"/><text x="146.5" y="184.0" fill="#213c56" font-size="14" font-weight="bold" text-anchor="middle">Compute NIC</text><text x="146.5" y="204.0" fill="#4d647a" font-size="11" font-weight="normal" text-anchor="middle">跨节点 GPU 通信</text><rect x="48" y="221" width="197" height="38" rx="12" fill="#fff0e2" stroke="#dab17d" stroke-width="1.5"/><text x="146.5" y="234.0" fill="#213c56" font-size="14" font-weight="bold" text-anchor="middle">Host / Front-end NIC</text><text x="146.5" y="254.0" fill="#4d647a" font-size="11" font-weight="normal" text-anchor="middle">调度 &amp; Sandbox RPC</text><rect x="48" y="271" width="92" height="30" rx="12" fill="#f3eefe" stroke="#a88cc8" stroke-width="1.5"/><text x="94.0" y="290.0" fill="#213c56" font-size="14" font-weight="bold" text-anchor="middle">Storage NIC</text><rect x="153" y="271" width="92" height="30" rx="12" fill="#feecec" stroke="#d6a1a1" stroke-width="1.5"/><text x="199.0" y="290.0" fill="#213c56" font-size="14" font-weight="bold" text-anchor="middle">BMC NIC</text><line x1="245" y1="190" x2="320" y2="190" stroke="#17745f" stroke-width="2.7"/><line x1="320" y1="190" x2="320" y2="119" stroke="#17745f" stroke-width="2.7"/><line x1="320" y1="119" x2="470" y2="119" stroke="#17745f" stroke-width="2.7"/><line x1="245" y1="240" x2="320" y2="240" stroke="#b4681f" stroke-width="2.7"/><line x1="320" y1="240" x2="320" y2="180" stroke="#b4681f" stroke-width="2.7"/><line x1="320" y1="180" x2="470" y2="180" stroke="#b4681f" stroke-width="2.7"/><line x1="140" y1="286" x2="320" y2="286" stroke="#7656a8" stroke-width="2.7"/><line x1="320" y1="286" x2="320" y2="240" stroke="#7656a8" stroke-width="2.7"/><line x1="320" y1="240" x2="470" y2="240" stroke="#7656a8" stroke-width="2.7"/><line x1="245" y1="286" x2="320" y2="286" stroke="#b34d4d" stroke-width="2.7"/><line x1="320" y1="286" x2="320" y2="302" stroke="#b34d4d" stroke-width="2.7"/><line x1="320" y1="302" x2="470" y2="302" stroke="#b34d4d" stroke-width="2.7"/><rect x="470" y="92" width="200" height="56" rx="12" fill="#dff1e9" stroke="#78b4a3" stroke-width="1.5"/><text x="570.0" y="114.0" fill="#213c56" font-size="14" font-weight="bold" text-anchor="middle">Compute ToR / Leaf</text><text x="570.0" y="134.0" fill="#4d647a" font-size="11" font-weight="normal" text-anchor="middle">RDMA / Ethernet / IB</text><rect x="470" y="158" width="200" height="54" rx="12" fill="#fff0e2" stroke="#dab17d" stroke-width="1.5"/><text x="570.0" y="179.0" fill="#213c56" font-size="14" font-weight="bold" text-anchor="middle">Services / In-band Leaf</text><text x="570.0" y="199.0" fill="#4d647a" font-size="11" font-weight="normal" text-anchor="middle">Host Front-end / RPC</text><rect x="470" y="220" width="200" height="51" rx="12" fill="#eee8fa" stroke="#ab93cf" stroke-width="1.5"/><text x="570.0" y="239.5" fill="#213c56" font-size="14" font-weight="bold" text-anchor="middle">Storage Leaf</text><text x="570.0" y="259.5" fill="#4d647a" font-size="11" font-weight="normal" text-anchor="middle">Checkpoint / 镜像 / Snapshot</text><rect x="470" y="279" width="200" height="51" rx="12" fill="#feeaea" stroke="#d4a1a1" stroke-width="1.5"/><text x="570.0" y="298.5" fill="#213c56" font-size="14" font-weight="bold" text-anchor="middle">OOB 管理 Leaf</text><text x="570.0" y="318.5" fill="#4d647a" font-size="11" font-weight="normal" text-anchor="middle">BMC / IPMI / Redfish</text><line x1="670" y1="119" x2="780" y2="119" stroke="#17745f" stroke-width="3"/><line x1="670" y1="183" x2="780" y2="183" stroke="#b4681f" stroke-width="3"/><line x1="670" y1="245" x2="780" y2="245" stroke="#7656a8" stroke-width="3"/><line x1="670" y1="305" x2="780" y2="305" stroke="#b34d4d" stroke-width="3"/><rect x="780" y="92" width="287" height="55" rx="12" fill="#dff1e9" stroke="#78b4a3" stroke-width="1.5"/><text x="923.5" y="113.5" fill="#213c56" font-size="14" font-weight="bold" text-anchor="middle">Compute 上联 → Spine</text><text x="923.5" y="133.5" fill="#4d647a" font-size="11" font-weight="normal" text-anchor="middle">跨机柜 G1 / F8 / 可选 O1</text><rect x="780" y="158" width="287" height="54" rx="12" fill="#fff0e2" stroke="#dab17d" stroke-width="1.5"/><text x="923.5" y="179.0" fill="#213c56" font-size="14" font-weight="bold" text-anchor="middle">CPU Sandbox / Head Node</text><text x="923.5" y="199.0" fill="#4d647a" font-size="11" font-weight="normal" text-anchor="middle">F1、F2/F3、F5/F6</text><rect x="780" y="220" width="287" height="51" rx="12" fill="#eee8fa" stroke="#ab93cf" stroke-width="1.5"/><text x="923.5" y="239.5" fill="#213c56" font-size="14" font-weight="bold" text-anchor="middle">Storage / Object Service</text><text x="923.5" y="259.5" fill="#4d647a" font-size="11" font-weight="normal" text-anchor="middle">O3、镜像、状态快照</text><rect x="780" y="279" width="287" height="51" rx="12" fill="#feeaea" stroke="#d4a1a1" stroke-width="1.5"/><text x="923.5" y="298.5" fill="#213c56" font-size="14" font-weight="bold" text-anchor="middle">OOB 管理设备 / BMC</text><text x="923.5" y="318.5" fill="#4d647a" font-size="11" font-weight="normal" text-anchor="middle">独立授权与访问控制</text><text x="31" y="364" fill="#5e7181" font-size="12" font-weight="normal" text-anchor="start">注意：服务器具体 NIC / DPU 数量、线速、Rail、布线取决于平台；此图仅用于识别网络类型，不表示实际端口数量。</text></svg></div>
+<p class="tier-caption">Compute NIC 与 Scale-up Link 是两类不同的数据出口。Head Node 使用 In-band Host/Front-end 网络；BMC 网络应独立隔离。Storage 可以使用专用 NIC/DPU/交换机，也可能与业务网络在物理基础设施上复用但用 VRF/VLAN/overlay 等隔离。</p>
+<h3>B. 跨机柜 / 跨 Row：分别沿 Compute、Services、Storage 三条路径走</h3>
+<div class="physical-diagram"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 390" role="img"><defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#0c7895"/></marker></defs><rect x="3" y="3" width="1094" height="384" rx="14" fill="#f7fafc" stroke="#d5e0ea"/><text x="24" y="29" fill="#213c56" font-size="16" font-weight="bold" text-anchor="start">B · 跨机柜 / 跨 Row：同一物理业务在不同网络平面形成并行路径</text><rect x="26" y="64" width="216" height="55" rx="12" fill="#e3f1fb" stroke="#6da4bd" stroke-width="1.5"/><text x="134.0" y="85.5" fill="#213c56" font-size="14" font-weight="bold" text-anchor="middle">Rack T：Training GPU</text><text x="134.0" y="105.5" fill="#4d647a" font-size="11" font-weight="normal" text-anchor="middle">Compute NIC / Host NIC</text><rect x="855" y="64" width="216" height="55" rx="12" fill="#e3f1fb" stroke="#6da4bd" stroke-width="1.5"/><text x="963.0" y="85.5" fill="#213c56" font-size="14" font-weight="bold" text-anchor="middle">Rack R：Rollout GPU</text><text x="963.0" y="105.5" fill="#4d647a" font-size="11" font-weight="normal" text-anchor="middle">Compute NIC / Host NIC</text><rect x="442" y="60" width="216" height="60" rx="12" fill="#dff1e9" stroke="#70b299" stroke-width="1.5"/><text x="550.0" y="84.0" fill="#213c56" font-size="14" font-weight="bold" text-anchor="middle">GPU Compute Spine</text><text x="550.0" y="104.0" fill="#4d647a" font-size="11" font-weight="normal" text-anchor="middle">IB / RoCE Leaf-Spine</text><line x1="242" y1="91" x2="442" y2="91" stroke="#17745f" stroke-width="4"/><line x1="658" y1="91" x2="855" y2="91" stroke="#17745f" stroke-width="4"/><text x="550" y="144" fill="#16745c" font-size="12" font-weight="normal" text-anchor="middle">G1 跨节点 Collective / F8 Policy Sync / 条件性的 O1 KV</text><rect x="26" y="178" width="216" height="55" rx="12" fill="#fff0e2" stroke="#dab17d" stroke-width="1.5"/><text x="134.0" y="199.5" fill="#213c56" font-size="14" font-weight="bold" text-anchor="middle">Rack T：Host / Head</text><text x="134.0" y="219.5" fill="#4d647a" font-size="11" font-weight="normal" text-anchor="middle">In-band NIC</text><rect x="855" y="178" width="216" height="55" rx="12" fill="#fff0e2" stroke="#dab17d" stroke-width="1.5"/><text x="963.0" y="199.5" fill="#213c56" font-size="14" font-weight="bold" text-anchor="middle">Rack E：Sandbox / Reward</text><text x="963.0" y="219.5" fill="#4d647a" font-size="11" font-weight="normal" text-anchor="middle">Service NIC</text><rect x="442" y="174" width="216" height="62" rx="12" fill="#fff0e2" stroke="#dab17d" stroke-width="1.5"/><text x="550.0" y="199.0" fill="#213c56" font-size="14" font-weight="bold" text-anchor="middle">Services Spine</text><text x="550.0" y="219.0" fill="#4d647a" font-size="11" font-weight="normal" text-anchor="middle">RPC / Controller / Samples</text><line x1="242" y1="208" x2="442" y2="208" stroke="#b4681f" stroke-width="4"/><line x1="658" y1="208" x2="855" y2="208" stroke="#b4681f" stroke-width="4"/><text x="550" y="257" fill="#ae6625" font-size="12" font-weight="normal" text-anchor="middle">F1 控制 / F2、F3 Tool / F4、F5、F7（按部署选择）</text><rect x="26" y="283" width="216" height="52" rx="12" fill="#eee9fb" stroke="#a88dc7" stroke-width="1.5"/><text x="134.0" y="303.0" fill="#213c56" font-size="14" font-weight="bold" text-anchor="middle">Rack T：Storage NIC / DPU</text><text x="134.0" y="323.0" fill="#4d647a" font-size="11" font-weight="normal" text-anchor="middle">Checkpoint / Snapshot</text><rect x="855" y="283" width="216" height="52" rx="12" fill="#eee9fb" stroke="#a88dc7" stroke-width="1.5"/><text x="963.0" y="303.0" fill="#213c56" font-size="14" font-weight="bold" text-anchor="middle">Rack S：Storage Service</text><text x="963.0" y="323.0" fill="#4d647a" font-size="11" font-weight="normal" text-anchor="middle">Shared FS / Object Storage</text><rect x="442" y="280" width="216" height="58" rx="12" fill="#eee9fb" stroke="#a88dc7" stroke-width="1.5"/><text x="550.0" y="303.0" fill="#213c56" font-size="14" font-weight="bold" text-anchor="middle">Storage Spine / Leaf</text><text x="550.0" y="323.0" fill="#4d647a" font-size="11" font-weight="normal" text-anchor="middle">独立网络或受控共用底座</text><line x1="242" y1="309" x2="442" y2="309" stroke="#7656a8" stroke-width="4"/><line x1="658" y1="309" x2="855" y2="309" stroke="#7656a8" stroke-width="4"/><text x="550" y="361" fill="#7656a8" font-size="12" font-weight="normal" text-anchor="middle">O3 Checkpoint / 镜像 / Snapshot；BMC 的 OOB 网络另行隔离，本图未并入数据面。</text></svg></div>
+<p class="tier-caption">跨柜 GPU 张量通信的典型逻辑是 Compute NIC → Compute Leaf/ToR → Spine → 对端 Compute Leaf → Compute NIC。Tool RPC 则可经 Host/Services 网络；Checkpoint 则走存储 Fabric。实际网络设备并非总是三套物理交换机，图中拆分的是<strong>流量平面</strong>。</p>
+<h3>C. 跨 Pod：计算数据是否跨 Pod，首先由资源编排决定</h3>
+<div class="physical-diagram"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 405" role="img"><defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#0c7895"/></marker></defs><rect x="3" y="3" width="1094" height="399" rx="14" fill="#f7fafc" stroke="#d5e0ea"/><text x="26" y="30" fill="#213c56" font-size="16" font-weight="bold" text-anchor="start">C · 跨 Pod：只在资源分布跨 Pod 时使用 Core / Super-Spine，原则上优先保持通信局部性</text><rect x="30" y="66" width="300" height="240" rx="12" fill="#e2f1fa" stroke="#6da4bd" stroke-width="1.5"/><text x="180.0" y="190.0" fill="#213c56" font-size="14" font-weight="bold" text-anchor="middle"></text><rect x="770" y="66" width="300" height="240" rx="12" fill="#e2f1fa" stroke="#6da4bd" stroke-width="1.5"/><text x="920.0" y="190.0" fill="#213c56" font-size="14" font-weight="bold" text-anchor="middle"></text><text x="180" y="91" fill="#213c56" font-size="16" font-weight="bold" text-anchor="middle">Pod A：训练资源域</text><text x="180" y="108" fill="#496175" font-size="11" font-weight="normal" text-anchor="middle">多 Row / 多 GPU Rack</text><text x="920" y="91" fill="#213c56" font-size="16" font-weight="bold" text-anchor="middle">Pod B：Rollout / Agent 域</text><text x="920" y="108" fill="#496175" font-size="11" font-weight="normal" text-anchor="middle">多 Row / GPU / CPU Rack</text><rect x="50" y="121" width="260" height="47" rx="12" fill="#fff" stroke="#6da4bd" stroke-width="1.5"/><text x="180.0" y="138.5" fill="#213c56" font-size="14" font-weight="bold" text-anchor="middle">Train GPU Rack / Node</text><text x="180.0" y="158.5" fill="#4d647a" font-size="11" font-weight="normal" text-anchor="middle">GPU + Scale-up Domain</text><rect x="50" y="195" width="260" height="56" rx="12" fill="#dff1e9" stroke="#78b4a3" stroke-width="1.5"/><text x="180.0" y="217.0" fill="#213c56" font-size="14" font-weight="bold" text-anchor="middle">Compute Leaf → Pod Spine</text><text x="180.0" y="237.0" fill="#4d647a" font-size="11" font-weight="normal" text-anchor="middle">Compute RDMA Fabric</text><rect x="790" y="121" width="260" height="47" rx="12" fill="#fff" stroke="#6da4bd" stroke-width="1.5"/><text x="920.0" y="138.5" fill="#213c56" font-size="14" font-weight="bold" text-anchor="middle">Rollout GPU Rack / Node</text><text x="920.0" y="158.5" fill="#4d647a" font-size="11" font-weight="normal" text-anchor="middle">GPU + 本地 Scale-up</text><rect x="790" y="195" width="260" height="56" rx="12" fill="#dff1e9" stroke="#78b4a3" stroke-width="1.5"/><text x="920.0" y="217.0" fill="#213c56" font-size="14" font-weight="bold" text-anchor="middle">Pod Spine ← Compute Leaf</text><text x="920.0" y="237.0" fill="#4d647a" font-size="11" font-weight="normal" text-anchor="middle">Compute RDMA Fabric</text><rect x="424" y="175" width="253" height="87" rx="12" fill="#dff1e9" stroke="#78b4a3" stroke-width="1.5"/><text x="550.5" y="212.5" fill="#213c56" font-size="14" font-weight="bold" text-anchor="middle">跨 Pod Core / Super-Spine</text><text x="550.5" y="232.5" fill="#4d647a" font-size="11" font-weight="normal" text-anchor="middle">仅条件性 F8 / KV / Train</text><line x1="310" y1="223" x2="424" y2="223" stroke="#17745f" stroke-width="4"/><line x1="677" y1="223" x2="790" y2="223" stroke="#17745f" stroke-width="4"/><rect x="30" y="331" width="300" height="44" rx="12" fill="#fff2e4" stroke="#dab17d" stroke-width="1.5"/><text x="180.0" y="347.0" fill="#213c56" font-size="14" font-weight="bold" text-anchor="middle">Pod A：Service + Storage</text><text x="180.0" y="367.0" fill="#4d647a" font-size="11" font-weight="normal" text-anchor="middle">逻辑平面（可共用物理 Ethernet）</text><rect x="770" y="331" width="300" height="44" rx="12" fill="#fff2e4" stroke="#dab17d" stroke-width="1.5"/><text x="920.0" y="347.0" fill="#213c56" font-size="14" font-weight="bold" text-anchor="middle">Pod B：Service + Storage</text><text x="920.0" y="367.0" fill="#4d647a" font-size="11" font-weight="normal" text-anchor="middle">RPC / 样本 / 存储</text><line x1="330" y1="350" x2="770" y2="350" stroke="#b4681f" stroke-width="4"/><text x="550" y="338" fill="#af6521" font-size="11" font-weight="normal" text-anchor="middle">跨 Pod 业务 / 存储互联（按安全和容量设计）</text><text x="550" y="300" fill="#435f73" font-size="12" font-weight="normal" text-anchor="middle">单一大 Load/Store Scale-up 域 ≠ 跨 Pod 的默认要求；大部分部署通过 Scale-out NIC 互通。</text></svg></div>
+<p class="tier-caption">如果 Training 和 Rollout 放在不同 Pod，Weight Sync 需要跨 Pod 数据路径；如果二者在同一个 Pod 甚至同一个 Node，就不会出现此类跨 Pod 流量。跨 Pod 路径可由 Spine/Core/Super-Spine 承载，不能自动推导出需要跨 Pod 的单一 GPU Load/Store 域。<a href="#ref-nvidia">[S1]</a></p>
+<div class="warn"><strong>网络术语特别说明：</strong>“机头网络”不是厂商统一定义。通常它是 Head Node/调度系统的 <b>In-band 管理网络</b>；<b>OOB 带外管理</b>用于 BMC、IPMI/Redfish、交换机管理端口、PDU 等，安全域应区别于 Head Node。NVIDIA SuperPOD 将 Compute、Storage、In-band、OOB 分别建模，且支持共享 Ethernet 底座上的逻辑分段。<a href="#ref-nvidia">[S1]</a></div>
+</section>
+<section id="qos">
+<h2>08｜流量的带宽、延迟、Burst、优先级映射</h2>
+<p>下表是<strong>网络设计的相对优先级与工程指标</strong>，不是通用的固定 SLO。绝对带宽、时延和 DSCP/802.1p 优先级需要按 NIC 速率、Lossless Fabric 设计、模型并行度、Tool 实际处理时长实测，不能给所有业务统一设置。</p>
+<div class="table-scroll"><table><thead><tr><th>流量</th><th>主网络</th><th>带宽特点</th><th>对时延敏感性</th><th>Burst / Fan-out</th><th>相对 QoS 建议</th><th>监控重点</th></tr></thead><tbody>
+<tr><td><b>G1 TP/EP/PP/DP</b></td><td>Scale-up + Compute Scale-out</td><td>高；同步时可接近网络瓶颈</td><td><b>非常高</b>，同步尾延迟会拖慢整步</td><td>Collective、EP All-to-All；规律性微突发</td><td><span class="qoshigh">P0（Compute Class）</span>；尽量独立 Rail/Queue</td><td>Collective p99、ECN/PFC、链路拥塞和负载不均</td></tr>
+<tr><td><b>G2 Rollout TP/EP</b></td><td>Scale-up；必要时 Scale-out</td><td>中–高；受 Prefill/Decode、MoE 形态影响</td><td><b>很高</b>（Decode Token 间延迟）</td><td>逐 Token 频繁同步、EP 分布变化</td><td><span class="qoshigh">P0/P1</span>；与训练业务隔离或资源编排</td><td>ITL p95/p99、GPU/NIC 负载、TP/EP 尾延迟</td></tr>
+<tr><td><b>F8 Policy Weight Sync</b></td><td>Compute Scale-out 或共址 IPC</td><td>极高的周期性大块传输；总量取决于副本数</td><td>对 <b>同步完成时间</b> 敏感，非每包极低 RTT</td><td>大块 / 多副本 Fan-out，可能跨 Pod</td><td><span class="qosmid">P1</span>；限峰/分批，与 Collective 错峰</td><td>Refit p95/p99、Bytes/Replica、Fan-out 和拥塞</td></tr>
+<tr><td><b>O1 P→D KV（条件性）</b></td><td>同域 Scale-up 或 Compute Scale-out</td><td>大块传输，Context 长度相关</td><td>较高；影响 TTFT 与 D 端启动</td><td>请求到达高峰及 KV 拉/推突发</td><td><span class="qoshigh">P1（可视 TTFT SLO 提升）</span>；避免与权重同步同队列挤占</td><td>KV Transfer FCT、TTFT、NIC 吞吐与拥塞</td></tr>
+<tr><td><b>O2 KV/State Resume</b></td><td>本机 PCIe / Scale-out / Storage</td><td>容量型，发生时突发</td><td>中–高；取决于恢复截止时间</td><td>Batch 恢复、并发 Resume</td><td><span class="qosmid">P1/P2</span>；按 Resume Deadline 调度</td><td>Snapshot/Prefetch p99、命中率、队列积压</td></tr>
+<tr><td><b>F2/F3 Tool RPC</b></td><td>Services/In-band（非 OOB）</td><td>通常低于 GPU 大流；可由文件/图片放大</td><td>高：多轮顺序依赖，服务处理时间占比可能更大</td><td>大量小请求 / 结果，非均匀高并发</td><td><span class="qoshigh">Service-P1</span>；单独服务 QoS，不与 RDMA 划同类</td><td>RPC RTT/处理时间分别统计、p99、超时/重试</td></tr>
+<tr><td><b>F4/F7 Trajectory</b></td><td>Services 或 GPU Data Plane（依实现）</td><td>中等；按轨迹长度变化</td><td>对 Batch Ready 时间敏感</td><td>轨迹结束时批量到达</td><td><span class="qosmid">P2</span>；防止大批量阻断 Control</td><td>Buffer Lag、Bytes/Trajectory、Tail</td></tr>
+<tr><td><b>F5/F6 Reward / Verifier</b></td><td>Services；GPU RM 可接 Compute 网络</td><td>低–中，任务与测试输出可很大</td><td>对迭代长尾和验证总时长敏感</td><td>Rollout 完成后集中发生</td><td><span class="qosmid">Service-P1/P2</span></td><td>Verifier 处理时长与网络耗时分别统计</td></tr>
+<tr><td><b>O3 Checkpoint / Images</b></td><td>Storage Fabric</td><td>大流量、较低频；镜像拉取可能集中</td><td>通常低于在线 GPU 同步路径</td><td>大块 I/O、作业启动/Checkpoint Wave</td><td><span class="qoslow">P2/P3</span>；独立容量，流控/限峰</td><td>存储吞吐、尾延迟、网络出口利用率</td></tr>
+<tr><td><b>F1 调度 / Head Control</b></td><td>In-band / Head 管理网络</td><td>低</td><td>高可靠性，少量消息延迟敏感</td><td>心跳/控制风暴风险</td><td><span class="qoshigh">独立 Control VRF/Segment</span>；保障可用性</td><td>调度 API 失败率、丢包、p99、路由健康</td></tr>
+<tr><td><b>BMC / IPMI / Redfish</b></td><td>OOB 带外管理</td><td>低</td><td>可靠性、安全隔离优先</td><td>设备级管理事件</td><td><span class="qoshigh">独立 OOB 安全域</span>；不要跑应用流量</td><td>可达性、授权、审计、隔离策略</td></tr>
+</tbody></table></div>
+<p class="small">P0–P3 只是<strong>概念上的相对等级</strong>，并不是厂商推荐的 802.1p/DSCP 编号。Compute Lossless 网络中 PFC/ECN、优先级和队列模型必须统一规划，不可简单把所有 P0 业务塞进同一个无损队列。Services/In-band 与 OOB 通常必须有安全隔离，后者不承载业务 Tool RPC。</p>
+<h3>建议以“完成时间分布”而不是单纯 Mbps 作为判断依据</h3>
+<ul><li>Collective：<b>Latency/FCT p99 + 有效 GPU 等待时间</b>。</li><li>Weight Sync：<b>每次 Refit 的 Makespan、并行度、每条路径 Bytes</b>。</li><li>KV：<b>TTFT、ITL、KV Transfer FCT、恢复 p99</b>。</li><li>Tool RPC：<b>网络 RTT 与业务计算时长拆开</b>，观察短请求和大结果两类流量。</li><li>Checkpoint：<b>完成时间、存储带宽和占用的前台业务容量</b>。</li></ul>
+</section>
+<section id="capacity">
+<h2>09｜从“逻辑数据量”映射为机柜/Pod 物理带宽的工程示例</h2>
+<p><span class="tag">条件性估算，非厂商实测</span> 以 32B BF16 Model、8 份完整逻辑推理副本、每 5 分钟 Refit 一次为例：</p>
+<div class="mathline">单份权重 ≈ 32 × 10⁹ × 2 B = 64 GB；8 份总逻辑分发 = 512 GB</div>
+<div class="mathline">平均等效业务速率 ≈ (512 GB × 8) / 300 s = 13.65 Gb/s（全系统总量）</div>
+<div class="mathline">若集中在 20 s 内完成，则等效总速率 ≈ 204.8 Gb/s（瞬时平均）</div>
+<p>这里的 204.8 Gb/s <strong>不是任意单根上联</strong>的必需带宽。若分发采用 Host/ToR 内的缓存复用、分片、分层广播，单根跨 Pod 链路可能只承载一部分或一次模型数据；如果所有副本逐一经过同一瓶颈链路，压力就明显更大。</p>
+<p>再假设独立 GPU KV Resume：64 条轨迹各需跨节点恢复 4 GiB，并希望 8 s 内完成（仅示例）：</p>
+<div class="mathline">64 × 4 GiB / 8 s = 32 GiB/s ≈ 274.9 Gb/s（总有效载荷）</div>
+<p>若同一批状态全部在本机 Host DRAM，则这些字节<strong>不经过 Scale-out ToR</strong>，其瓶颈可能在 PCIe / CPU DRAM / 本地加速器互联。</p>
+<p>最后考虑 Tool RPC：2,000 次/s × 每次 Request+Response 16 KiB，则整个 Service Network 的平均载荷约 <strong>262 Mb/s</strong>；但若每轮工具调用必须等待上一轮结果，哪怕带宽空闲，RPC p99 增加也会显著拖慢长程 Trajectory。</p>
+<h3>正确的容量规划步骤</h3>
+<ol><li>定位每份 Policy Replica、KV Owner、Sandbox 和 Buffer 的机柜及 Pod。</li><li>标出 NIC/DPU（Compute、Host/In-band、Storage、BMC）对应哪张 Fabric。</li><li>对每一条 Flow 建立 <code>source / destination / bytes / fan-out / burst window / deadline</code>。</li><li>将逻辑 Flow 映射到具体 ToR、Spine、Core 与 Rail，沿路径累计 Bytes（考虑复制树）。</li><li>把 G1、F8、O1/O2、F2/F3、O3 的时间序列叠加，在真实拥塞控制下分析 P95/P99 和边界条件。</li></ol>
+<div class="callout"><strong>关键结论：</strong> Agentic RL 对 Scale-up 主要延续模型并行通信需求；对 Scale-out 增加 Policy Weight Sync、可选 KV 迁移和恢复突发；对 CPU/业务网增加高并发 RPC；对 Storage 增加 Snapshot/Checkpoint；而 Head/In-band 与 OOB 需要独立保持可用和安全。<strong>网络建模的核心是路径与时间重叠，而非只罗列峰值带宽。</strong></div>
+</section>
+<section id="references">
+<h2>10｜一手来源与证据边界</h2>
+<ol class="source-list">
+<li id="ref-nvidia"><a href="https://docs.nvidia.com/dgx-superpod/reference-architecture/scalable-infrastructure-b300-xdr/latest/network-fabrics.html" target="_blank" rel="noopener">NVIDIA DGX SuperPOD B300 Network Fabrics</a>：Compute、Storage、In-band、OOB 及按 SU / Leaf-Spine 扩展，尤其 Network Segmentation 章节。</li>
+<li><a href="https://docs.nvidia.com/dgx-superpod/reference-architecture-scalable-infrastructure-gb200/latest/network-fabrics.html" target="_blank" rel="noopener">NVIDIA GB200 SuperPOD Network Fabrics</a>：NVLink 单柜 Scale-up、Compute Fabric 跨柜、Storage/In-band/OOB 拆分、跨 SU Core 设计。</li>
+<li><a href="https://docs.nvidia.com/nemo/rl/nightly/guides/refit.html" target="_blank" rel="noopener">NeMo RL — Weight Refit: Choosing a Transport</a>：Colocated CUDA IPC、Non-colocated NCCL/Reshard/NIXL、Sparse Delta。</li>
+<li><a href="https://docs.nvidia.com/nemo/rl/nightly/guides/checkpoint-engine-refit.html" target="_blank" rel="noopener">NeMo RL — Checkpoint-Engine Refit</a>：NIXL/UCX RDMA 的跨训练与推理分片传输。</li>
+<li><a href="https://www.usenix.org/conference/osdi26/presentation/gao" target="_blank" rel="noopener">RollArt（OSDI 2026）</a>：Agentic RL 中 Prefill/Decode、环境交互、Reward 与 Policy Weight Transfer 的分离式系统部署。</li>
+<li><a href="https://vllm-project.github.io/2026/09/29/disaggregated-serving-guide.html" target="_blank" rel="noopener">vLLM 2026：Disaggregated Serving Guide</a>：P/D 分离与 KV Cache 迁移，以及独立 CPU Frontend。</li>
+</ol>
+<p class="small">核验纪律：上述行业参考资料支持<strong>可分网络平面与通信机制</strong>；三层拓扑图是示意性工程设计，不是某型号机柜的真实布线。QoS 等级、带宽数字、应用优先级是供方案评审和测试验证的模型，<strong>不是行业固定规范，也未被指定厂商实测背书</strong>。</p>
+</section>
+</article>
+</main>
+<footer>2026-10-25 · V2 深度技术研究 · 已补齐单机柜 / 跨 Row / 跨 Pod 物理拓扑和流量 QoS/容量模型 · <a href="https://xinglongcui.github.io/summary/">返回研究报告首页</a></footer></body></html>
