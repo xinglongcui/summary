@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Agentic RL 后训练如何模拟真实生产环境：Kimi K3、SWE-bench、WebArena、OSWorld 与 τ-bench 技术路线及真实度验证。">
+<title>后训练如何模拟真实生产环境｜Agentic RL 深度研究</title>
+<style>
+:root{color-scheme:light dark;--bg:#f4f7fa;--paper:#fff;--ink:#183047;--muted:#607286;--border:#d9e3ea;--accent:#0a7997;--navy:#0d2d4a;--soft:#edf5f9;--warm:#fff8e9}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font:15.5px/1.85 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
+header{padding:56px max(22px,calc((100vw - 1080px)/2)) 48px;background:linear-gradient(117deg,#132e4b,#086880);color:white}
+header h1{font-size:clamp(1.7rem,4vw,2.55rem);line-height:1.32;margin:10px 0 14px}header p{font-size:1.04rem;opacity:.9;max-width:800px;margin:0}header small{opacity:.85;letter-spacing:.07em}
+main{max-width:1080px;margin:0 auto;padding:24px 18px 70px;display:grid;grid-template-columns:215px minmax(0,1fr);gap:23px}nav{position:sticky;top:18px;align-self:start;background:var(--paper);border:1px solid var(--border);border-radius:12px;padding:17px;font-size:14px}nav strong{display:block;margin-bottom:10px}nav a{display:block;color:var(--muted);text-decoration:none;padding:5px 0}nav a:hover{color:var(--accent)}
+article{min-width:0}section{border:1px solid var(--border);background:var(--paper);border-radius:13px;padding:25px 29px;margin-bottom:19px;box-shadow:0 3px 18px #132b4410}h2{margin:0 0 12px;font-size:1.38rem;line-height:1.4;color:var(--navy)}h3{margin:24px 0 8px;font-size:1.09rem;color:var(--navy)}p{margin:9px 0 14px}a{color:var(--accent)}strong{font-weight:700}ul,ol{padding-left:23px;margin:9px 0}li{margin:6px 0}.muted,small{color:var(--muted)}
+.highlight{padding:15px 18px;background:var(--soft);border-left:4px solid var(--accent);border-radius:8px;font-size:1.06rem;font-weight:650;margin:17px 0}
+.note{background:var(--soft);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin:14px 0}.warning{background:var(--warm);border-color:#dcc99f}.tag{display:inline-block;border-radius:4px;font-size:.76rem;font-weight:700;letter-spacing:.02em;padding:2px 6px;margin-right:4px;background:var(--soft);color:#157589}
+.tscroll{overflow-x:auto;border-radius:9px;border:1px solid var(--border);margin:14px 0}table{border-collapse:collapse;min-width:650px;width:100%;font-size:.92rem}th,td{text-align:left;vertical-align:top;padding:11px 12px;border-bottom:1px solid var(--border)}th{background:#eaf2f8;color:#294561}tr:last-child td{border-bottom:0}
+.flow{display:flex;align-items:center;flex-direction:column;gap:8px;padding:9px}.stage{width:min(570px,100%);padding:13px 15px;border-radius:9px;border:1px solid #b9d6e4;background:var(--soft);text-align:center}.stage b{display:block}.stage small{display:block}.arrow{font-size:20px;line-height:1;color:var(--accent)}
+.columns{display:grid;grid-template-columns:1fr 1fr;gap:12px}.tile{border:1px solid var(--border);border-radius:10px;padding:13px 16px}.tile strong{display:block}.math{font:600 16px/1.7 Georgia,serif;text-align:center;background:var(--soft);border-radius:8px;padding:12px;overflow-x:auto;margin:15px 0}pre{white-space:pre-wrap;word-break:break-word;padding:16px;border-radius:9px;background:#11283e;color:#e7f5ff;font:13px/1.7 ui-monospace,SFMono-Regular,Consolas,monospace}footer{max-width:1080px;margin:auto;padding:0 22px 45px;color:var(--muted);font-size:13px}
+@media(max-width:810px){main{display:block;padding:15px 12px 45px}nav{position:static;display:flex;align-items:center;white-space:nowrap;gap:15px;overflow-x:auto;padding:9px 15px;margin-bottom:15px}nav strong{display:none}header{padding:37px 19px}section{padding:21px 17px}.columns{grid-template-columns:1fr}table{font-size:.9rem}}
+@media(prefers-color-scheme:dark){:root{--bg:#0f1926;--paper:#19293b;--ink:#e4eef7;--muted:#a9bbce;--border:#344a5e;--accent:#77d5ed;--navy:#e7f1fb;--soft:#203b4b;--warm:#3c3325}th{background:#233d50;color:#dbeefa}.tag{color:#93dcee}.stage{border-color:#426d7d}header{background:linear-gradient(117deg,#0b223b,#13506b)}}
+</style></head>
+<body>
+<header><small>ENGINEERING RESEARCH · AGENTIC RL · 2026-10-25</small><h1>后训练如何模拟真实生产环境？</h1><p>真实任务 ≠ 直接连接生产系统。核心是可复位的状态环境、接近真实的工具语义、动态事件流与独立的结果验证器。</p></header>
+<main>
+<nav aria-label="目录"><strong>目录导航</strong><a href="#answer">01 核心回答</a><a href="#loop">02 训练闭环</a><a href="#levels">03 真实性分层</a><a href="#kimi">04 Kimi 具体方案</a><a href="#cases">05 典型实例</a><a href="#rewards">06 Reward 验证</a><a href="#gap">07 仿真到生产</a><a href="#infra">08 基础设施</a><a href="#practical">09 工程落地</a><a href="#sources">文献</a></nav>
+<article>
+<section id="answer"><h2>01｜核心回答：不是复制一整个真实世界，而是复制任务所需的“状态变化规则”</h2>
+<div class="highlight">Agentic RL 一般不会直接拿真实生产账号、生产数据库和真实用户来做大规模试错。通常采用沙箱中的可执行软件、模拟业务系统（Mock）、数据库快照、任务生成器和验证器；再通过真实流量回放、Staging 与受控上线来检验泛化能力。</div>
+<p>这里的“真实”至少包含四个不同概念：</p>
+<div class="tscroll"><table><thead><tr><th>真实性维度</th><th>具体是什么</th><th>可否做到高度真实</th></tr></thead><tbody>
+<tr><td>任务分布真实性</td><td>真实客户会问什么、Bug/需求的类别与难度、异常频率</td><td>可用历史任务统计校准，但未来分布仍可能变化</td></tr>
+<tr><td>工具与协议真实性</td><td>Agent 看到的 API Schema、返回格式、权限与错误码</td><td>可以复用真实 SDK 或实现兼容 API；复杂行为仍可能偏离</td></tr>
+<tr><td>业务状态真实性</td><td>数据库记录、权限、依赖关系、事务和多步状态变更</td><td>可用快照/模拟 DB + 真实规则，仍需防止数据泄漏与污染</td></tr>
+<tr><td>动态环境真实性</td><td>人会改变需求、其他任务同时更新、超时、延迟、资源故障</td><td>最难；可注入事件/扰动，但无法穷尽生产世界</td></tr>
+</tbody></table></div>
+<p><span class="tag">工程判断</span> 对训练来说，“能够安全试错、可重复 reset、可自动评分”往往比百分之百重现所有生产细节更重要。对上线来说则相反：必须拿真实流程、真实权限和真实异常验证，不可只凭仿真分数。</p>
+</section>
+<section id="loop"><h2>02｜一套 RL Environment 到底如何构建？</h2>
+<div class="flow">
+<div class="stage"><b>① 生产任务提取</b><small>真实工单/Issue/聊天/操作日志，脱敏后统计任务与失败模式</small></div><div class="arrow">↓</div>
+<div class="stage"><b>② Task Definition + Initial State</b><small>定义任务目标、用户身份、环境初态、权限、约束、预算</small></div><div class="arrow">↓</div>
+<div class="stage"><b>③ Environment Runtime</b><small>容器 / microVM / 浏览器 / Mock API / DB / 模拟用户与事件注入</small></div><div class="arrow">↓</div>
+<div class="stage"><b>④ Agent Rollout</b><small>观察 → 推理 → 调工具 → 更新状态 → 接收新观察，持续多步</small></div><div class="arrow">↓</div>
+<div class="stage"><b>⑤ 独立 Verifier / Reward</b><small>比较最终 DB、测试通过、工件正确性、安全规则和预算</small></div><div class="arrow">↓</div>
+<div class="stage"><b>⑥ Trajectory → RL Update</b><small>记录 action、observation、logprob、reward 与状态版本；更新策略</small></div>
+</div>
+<p>训练环境常抽象为状态转移函数，而不是单轮输入输出：</p>
+<div class="math">s(t+1) = T(s(t), a(t), e(t))<br>o(t) = O(s(t))，R = V(s(final), goal, constraints)</div>
+<p>其中 <b>s</b> 是环境真实状态，<b>a</b> 是 Agent 操作，<b>e</b> 是来自其他用户/时间/系统的外部事件，<b>o</b> 是 Agent 允许看到的观察，<b>V</b> 是独立结果验证器。Agent 不能直接读取全部内部状态或标准答案。</p>
+<p>关键点：<strong>把“状态转移”做正确，比只把 Web UI 做得像更重要。</strong> 如果调用了“退款成功”API，但模拟环境没有正确更改订单、资金与库存状态，就不是有用的训练环境。</p>
+</section>
+<section id="levels"><h2>03｜四种环境，真实性与成本逐级增加</h2>
+<div class="tscroll"><table><thead><tr><th>级别</th><th>主要方法</th><th>适合训练什么</th><th>局限</th></tr></thead><tbody>
+<tr><td>L1 静态任务 / 规则验证</td><td>数学答案、代码单测、结构化数据</td><td>RLVR、短推理、Kernel 数值优化</td><td>无法真实模拟复杂任务协作与多步状态</td></tr>
+<tr><td>L2 可执行仿真</td><td>Docker/VM、仿真站点、DB、API Mock</td><td>软件修复、交易流程、Web Agent</td><td>只覆盖被实现的规则；可被模型利用漏洞</td></tr>
+<tr><td>L3 持续演化的 Living Environment</td><td>多应用状态、模拟用户、事件时间线、任务交叉依赖</td><td>长程办公/经营/研究 Agent</td><td>用户行为与外部依赖分布的真实性难保证</td></tr>
+<tr><td>L4 Staging / Shadow / 有限生产验证</td><td>真实服务的隔离副本、生产流量影子执行、Canary</td><td>上线前验证与故障发现</td><td>不能无约束做强化学习探索；有风险、隐私与成本</td></tr>
+</tbody></table></div>
+<p>注：这是为工程讨论构造的四级分类，不是行业统一成熟度标准。</p>
+</section>
+<section id="kimi"><h2>04｜Kimi K3：最直接的“真实环境模拟”公开案例</h2>
+<h3>4.1 模拟 Gmail / Notion / Slack / Canvas，而不是连接真实账号</h3>
+<p><span class="tag">已核实事实</span> Kimi K3 技术报告 <b>§4.2.5，第 16 页（PDF 索引第 15 页）</b>明确提出：为长程 Personal Assistant 任务创建常见应用的高保真 Mock，保留真实应用的核心语义，使大规模交互不依赖外部 API，也不受真实服务限速制约。任务来自 HR、法律、金融等职业工作流；Agent 在多天持续变化的环境中处理跨应用相互依赖的事件，一条 Rollout 最多涉及数千次工具调用，累计上下文达百万 Token 量级。<a href="#s1">[1]</a></p>
+<p>这说明所谓“真实生产环境”更多是重建<strong>业务世界的可操作模型</strong>，并不要求真实 Gmail/Slack 的每个功能、每个后端服务都在训练中存在。</p>
+<h3>4.2 Autonomous Execution Tasks：给目标和接口，不给正确执行步骤</h3>
+<p><span class="tag">已核实事实</span> 同报告 <b>§4.2.6，第 16 页</b>：每个任务指定初始状态、约束目标、可用 Tool、执行预算和独立 Verifier。模型不知道参考操作轨迹，必须自己规划、尝试、纠错、决定终止。奖励基于最终环境状态，而不是 Agent 自称“完成”。公开验证器提供诊断信息，隐藏验证器在留出场景中评分，并对过多提交予以惩罚。<a href="#s1">[1]</a></p>
+<h3>4.3 Sandbox 负责运行真实代码，VM 隔离危险行为</h3>
+<p><span class="tag">已核实事实</span> <b>§5.3.2，第 22 页（PDF 索引第 21 页）</b>：K3 使用容器、GPU Sandbox 与基于 Firecracker 的 AgentENV microVM。它支持 Pause/Resume、Fork、Snapshot，允许模型安装软件、挂载磁盘甚至在受控环境内启动虚拟机；针对长程 Rollout，状态能够跨调度周期保存恢复。K3 报告称训练与评估期间合计创建 51,219,741 个 Sandbox 实例。<a href="#s1">[1]</a></p>
+<div class="note warning"><b>不要过度推断：</b>官方披露的是训练环境形式和任务范式，不是“把 Kimi 的真实生产系统复制了一遍”，也没有公开足以证明其模拟数据与真实用户工作负载同分布的全面统计。</div>
+</section>
+<section id="cases"><h2>05｜另外三个具有代表性的方案</h2>
+<h3>A. Coding Agent：SWE-bench 用真实仓库 + 可重复容器测试</h3>
+<p><b>任务来源：</b>真实 GitHub Issue + 仓库代码快照；<b>动作：</b>查看文件、运行命令、修改补丁；<b>Environment：</b>与任务匹配的 Docker 容器；<b>结果：</b>将模型 Patch 应用到仓库并执行测试套件。SWE-bench Verified 有 500 条经工程师核验可解的任务。<a href="#s2">[2]</a></p>
+<p>它主要用于评估；若把类似结构用于 RL 训练，需要额外设计训练/验证划分和抗 Reward Hacking 机制。<strong>真实代码和实际可执行测试</strong>比只给模型一个“这个修复是否正确”的主观评价更可信。</p>
+<h3>B. Web Agent：WebArena / OSWorld 2.0 提供完整可操作的网站与电脑</h3>
+<p>WebArena 使用可复现的功能站点来模拟购物、论坛、协作开发和 CMS；评测重点是最终状态是否正确，而不是点击序列是否与参考轨迹完全一致。<a href="#s3">[3]</a></p>
+<p>OSWorld 2.0 进一步针对跨桌面应用/网站的真实任务提供 VM、初始化文件、模拟站点和执行型评分器。2026 年 8 月版本强调代码、镜像、任务与站点版本同时锁定，避免不同版本的环境混用造成不可复现。<a href="#s4">[4]</a></p>
+<h3>C. 企业客服 Agent：τ-bench 使用“模拟用户 + 真实业务 API 形状”</h3>
+<p>τ-bench 在零售及航空业务中，让另一个 LLM 扮演用户与 Agent 持续交谈；Agent 必须遵循业务规则调用 API，最终用数据库状态与目标状态的差异评分，并通过 pass^k 衡量重复执行的可靠性。<a href="#s5">[5]</a></p>
+<p>模拟用户并不等于真人：真实用户的语言分布、欺骗行为、文化差异和罕见请求会成为显著 Sim-to-Real Gap。因此测试集不能只由同一个模型和模板产生。</p>
+</section>
+<section id="rewards"><h2>06｜为什么验证器比“模拟界面像不像”还重要？</h2>
+<div class="tscroll"><table><thead><tr><th>任务</th><th>不可靠评分</th><th>更可靠的奖励/验证器</th></tr></thead><tbody>
+<tr><td>代码修复</td><td>Agent 声称已修复</td><td>隐藏测试 + 回归测试 + Patch 检查</td></tr>
+<tr><td>航班改签</td><td>回复“已改签”</td><td>目标预订 DB 状态、支付/政策约束、消息告知校验</td></tr>
+<tr><td>RTL Bug 修复</td><td>代码编译成功</td><td>Lint/Elaboration、定向 Testbench、Assertion、覆盖率、不同参数配置</td></tr>
+<tr><td>GPU Kernel 优化</td><td>只提高运行速度</td><td>隐藏输入正确性 + 性能基线 + 防缓存/计算作弊</td></tr>
+<tr><td>办公任务</td><td>输出一份漂亮报告</td><td>文档/表格最终状态、引用正确性、权限合规、交付检查</td></tr>
+</tbody></table></div>
+<p>如果奖励规则被 Agent 找到漏洞，RL 会把漏洞“训练进模型”。比如模型可能删掉失败的测试、修改评分脚本、缓存答案、绕过业务规则。因此需从设计上隔离 Agent 权限与 Verifier：<strong>隐藏测试、只读评分环境、独立执行、预算限制、留出任务</strong>是重要手段。Kimi K3 的 AET 也明确披露了公开/隐藏验证器的区分。<a href="#s1">[1]</a></p>
+<p>辅助性的 LLM Judge 可评价文风、语义或复杂主观输出，但不能替代可以被程序独立验证的状态、测试或权限检查。</p>
+</section>
+<section id="gap"><h2>07｜从仿真到真实生产：最难的是“分布差距”</h2>
+<p>即使使用真实代码和完全一致的 API Schema，仿真结果仍可能因以下问题严重高估生产能力：</p>
+<ul>
+<li><b>业务规则缺失：</b>只模拟成功路径，未覆盖退款纠纷、权限错误、并发写入或异常回滚。</li>
+<li><b>输入分布偏差：</b>合成任务更规范，真实用户描述含糊、改变目标、提供错误信息。</li>
+<li><b>外部环境偏差：</b>真实 API 有网络延迟、限流、幂等语义、部分失败和超时。</li>
+<li><b>时序偏差：</b>生产中多个独立用户和 Agent 会同时修改状态。</li>
+<li><b>奖励偏差：</b>训练验证器覆盖有限，Agent 在模拟评测上学会投机。</li>
+<li><b>安全与隐私偏差：</b>沙箱测试可能使用高权限，生产中不允许越权读取或修改。</li>
+</ul>
+<h3>推荐五级上线验证路径</h3>
+<div class="flow"><div class="stage"><b>① 单元/集成环境</b><small>开发环境里的确定性测试，排除显性功能错误</small></div><div class="arrow">↓</div><div class="stage"><b>② 分布多样化 Sandbox / Hold-out Tasks</b><small>真实任务近似数据 + 合成异常 + 隐藏测试，且训练与评测严格分离</small></div><div class="arrow">↓</div><div class="stage"><b>③ Staging / 生产等价配置</b><small>真实软件版本、策略、权限、API 和脱敏/合成数据副本；具备可回滚性</small></div><div class="arrow">↓</div><div class="stage"><b>④ Shadow Mode</b><small>观察经合规处理的真实请求；只读或执行到隔离副本，不对生产产生副作用</small></div><div class="arrow">↓</div><div class="stage"><b>⑤ 低风险 Canary + 人工审批</b><small>限权、限速、可终止、可回滚；逐步扩大覆盖并监控真实失效率</small></div></div>
+<p>Salesforce 官方同时提供 Mocked Data 和 Live Data 测试：前者不影响实际组织数据，后者可以检验真实依赖和延迟，但可能对真实系统产生修改。因此 Live Test 不应被理解为能安全无限制地进行 RL 探索。<a href="#s6">[6]</a></p>
+<p>OpenEnv 框架也明确区分 Training/Evaluation 所需的 <code>reset() / step() / state()</code> 环境接口与面向生产调用者暴露的 MCP Tools。两者可以复用业务逻辑，但控制面不应混淆。<a href="#s7">[7]</a></p>
+</section>
+<section id="infra"><h2>08｜对应哪类硬件与网络需求？</h2>
+<div class="tscroll"><table><thead><tr><th>组件</th><th>关键资源</th><th>流量性质</th><th>是否必须新建网络</th></tr></thead><tbody>
+<tr><td>Policy Trainer</td><td>GPU + HBM + TP/EP/DP Fabric</td><td>同步、带宽敏感</td><td>通常复用已有训练 Fabric</td></tr>
+<tr><td>Agent Rollout</td><td>GPU + KV Cache / Host DRAM</td><td>不规则 Decode + 长上下文状态</td><td>可以复用，需独立考虑 QoS/调度</td></tr>
+<tr><td>Environment Pool</td><td>CPU + DRAM + NVMe + MicroVM</td><td>工具 RPC、Sandbox 镜像、快照、恢复</td><td>不需要直接 Scale-up Load/Store 域</td></tr>
+<tr><td>Simulator / Mock Services</td><td>CPU 服务 + DB + Storage</td><td>状态读写、事件、验证器 RPC</td><td>普通业务网络可承载，规模化需测尾延迟</td></tr>
+<tr><td>Trajectory & Reward</td><td>对象存储 / 数据库 / CPU</td><td>大批量日志和样本传送</td><td>通常不需要专门低延迟 GPU 网络</td></tr>
+</tbody></table></div>
+<p><span class="tag">工程推断</span> “真实生产环境模拟”增加的主要是 <strong>CPU、内存、存储、隔离和业务服务</strong>的供给，而不是让所有模拟环境加入超大的 GPU Scale-up Domain。训练 GPU 与环境的交互是一种跨资源池业务，能否成为网络瓶颈取决于并发、每步 RPC、超时和快照大小。</p>
+<div class="math">Environment QPS ≈ N<sub>concurrent rollouts</sub> × tool calls / second per rollout</div>
+<p>这是粗略容量模型；若每条轨迹有多个并行子 Agent，需按实际 Tool Call Fan-out 和读写大小细化。若为了真实度注入随机慢响应，必须控制随机种子/日志来确保实验可重放，否则无法辨别模型退化是随机环境造成还是训练策略造成。</p>
+</section>
+<section id="practical"><h2>09｜假设要训练一个“RTL 修复 Agent”，具体怎样实施？</h2>
+<p>以下是为工程分析构造的实施方案，不代表 Kimi 已公开训练 RTL Agent 的全部细节。</p>
+<div class="tscroll"><table><thead><tr><th>工作项</th><th>环境中怎么做</th><th>为什么</th></tr></thead><tbody>
+<tr><td>任务来源</td><td>整理可公开/已脱敏 Bug 单、历史 Issue、回归失败记录</td><td>逼近真实工程问题分布，避免编造太简单的题</td></tr>
+<tr><td>初态</td><td>固定 Git Commit + 构建脚本 + Testbench + 工具版本</td><td>每个 Rollout 从相同初态开始，可复现</td></tr>
+<tr><td>可用动作</td><td>读取 RTL、搜索仓库、修改文件、运行 Lint/Simulation、读取日志</td><td>与真实工作流操作语义一致</td></tr>
+<tr><td>扰动</td><td>缺少依赖、构建失败、工具报错、错误日志、不同参数宽度</td><td>训练排障与恢复，而不只是修复理想样例</td></tr>
+<tr><td>Verifier</td><td>隐藏回归 + Assertion + 覆盖率 + 禁止修改测试与脚本</td><td>评判真实修复，而不是仅编译通过或复制答案</td></tr>
+<tr><td>安全</td><td>每条轨迹独立 VM，禁止访问公司网络/密钥；CPU 资源限额</td><td>避免 Agent 在探索中破坏其它作业或泄漏资料</td></tr>
+<tr><td>上线验收</td><td>先由 Agent 提 PR → 独立 CI → 工程师 Review → 合并</td><td>实际效果通过受控工程流程验证，而非让 Agent 直接改生产分支</td></tr>
+</tbody></table></div>
+<p>一条任务可能长这样：</p>
+<pre>{
+  "task": "修复 FIFO 在 full &amp;&amp; simultaneous_pop 条件下的写入握手",
+  "initial_state": "repo@fixed_commit + simulator_image@digest",
+  "tools": ["read", "grep", "patch", "lint", "simulate"],
+  "visible_feedback": ["compile_log", "public_test_results"],
+  "hidden_verifier": ["directed_assertions", "parameterized_regression"],
+  "constraints": ["no_test_changes", "no_network", "time_budget"],
+  "reward": "hidden_correctness - policy_violation_penalty"
+}</pre>
+<p>训练得到的是能够在工具环境中工作、测试、诊断和修复的 <strong>Policy</strong>；上线流程仍应由工程验收和权限策略兜底。</p>
+<div class="highlight">最终结论：Agentic RL 不是“通过虚构一些问答让模型假装上班”，而是构建一套可执行、可观察、可验证、可重放的数字化任务世界。它越接近生产系统的业务状态和失败模式，训练收益通常越有现实价值；但没有任何 Sandbox 可以代替真实生产验证。</div>
+</section>
+<section id="sources"><h2>一手资料与核验位置</h2>
+<ol>
+<li id="s1"><a href="https://arxiv.org/pdf/2607.24653" target="_blank" rel="noopener">Kimi K3 Technical Report</a>：PDF 印刷第 16 页 §4.2.5 Personal Assistant Tasks、§4.2.6 Autonomous Execution Tasks；第 22 页 §5.3.2 Sandbox Infrastructure。官方 GitHub：<a href="https://github.com/MoonshotAI/Kimi-K3" target="_blank" rel="noopener">MoonshotAI/Kimi-K3</a>。</li>
+<li id="s2"><a href="https://www.swebench.com/SWE-bench/faq/" target="_blank" rel="noopener">SWE-bench FAQ</a>：真实 GitHub Issue、Docker 环境、测试评分、Verified 500 条。</li>
+<li id="s3"><a href="https://proceedings.iclr.cc/paper_files/paper/2024/hash/4410c0711e9154a7a2d26f9b3816d1ef-Abstract-Conference.html" target="_blank" rel="noopener">WebArena（ICLR 2024）</a>：可复现真实功能站点，最终任务完成正确性。</li>
+<li id="s4"><a href="https://github.com/xlang-ai/OSWorld-V2" target="_blank" rel="noopener">OSWorld 2.0 官方仓库</a>：2026.08.08 版本、环境/任务/镜像锁定、真实电脑环境与评测。</li>
+<li id="s5"><a href="https://proceedings.iclr.cc/paper_files/paper/2025/hash/1b126cc38b8638e07bef37e7b2bb72bf-Abstract-Conference.html" target="_blank" rel="noopener">τ-bench（ICLR 2025）</a>：模拟用户、业务 API、最终 DB State 验证与 pass^k。</li>
+<li id="s6"><a href="https://help.salesforce.com/s/articleView?id=ai.agent_studio_testing_center_test_conditions.htm&amp;language=en_US&amp;type=5" target="_blank" rel="noopener">Salesforce Agentforce：Mocked/Live Data</a>：模拟与真实连接的测试边界。</li>
+<li id="s7"><a href="https://github.com/huggingface/openenv/blob/main/docs/source/guides/simulation-vs-production.md" target="_blank" rel="noopener">OpenEnv：Simulation vs Production Mode</a>：训练状态机接口与生产工具接口之分。</li>
+</ol>
+<p class="muted">区分依据：以上标注“已核实事实”来自对应原始论文/官方项目文档；架构推荐、四级划分、RTL 案例为工程推断和示例。报告没有声称 Kimi 的 Mock 应用与真实 Gmail/Slack 完全一致。</p>
+</section>
+</article></main>
+<footer>2026-10-25 · 个人技术研究笔记 · <a href="../">返回报告首页</a></footer>
+</body></html>
