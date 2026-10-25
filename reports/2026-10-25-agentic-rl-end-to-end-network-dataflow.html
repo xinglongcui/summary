@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="description" content="深入分析 Online RL / Agentic RL 从任务生成、Rollout、Tool/Sandbox、Reward、GRPO/PPO 到 Policy Weight Synchronization 的端到端业务与网络数据流。">
+<title>Agentic RL 完整业务流与网络流量模型｜技术研究</title>
+<style>
+:root{color-scheme:light dark;--bg:#f3f6fa;--paper:#fff;--ink:#162b40;--sub:#52677d;--stroke:#dbe4ee;--soft:#edf5fa;--navy:#143858;--blue:#0d7f9d;--teal:#177f70;--orange:#ae6322;--purple:#7657a6;--box:#f8fbfd}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font:15.5px/1.78 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}a{color:var(--blue);text-decoration-thickness:1px}
+header{background:linear-gradient(115deg,#102d4e,#0b6b81);color:#fff;padding:49px max(22px,calc((100vw - 1140px)/2)) 40px}header h1{font-size:clamp(1.8rem,3.8vw,2.7rem);line-height:1.28;margin:10px 0 12px;max-width:950px}header p{opacity:.91;max-width:930px;margin:0}header small{letter-spacing:.1em;opacity:.82}
+.layout{max-width:1140px;display:grid;grid-template-columns:205px minmax(0,1fr);gap:23px;margin:auto;padding:26px 18px 60px}
+nav{background:var(--paper);border:1px solid var(--stroke);border-radius:13px;padding:17px 15px;position:sticky;top:20px;align-self:start;font-size:13.5px}nav strong{display:block;padding:0 4px 9px}nav a{display:block;padding:5px 4px;text-decoration:none;color:var(--sub)}nav a:hover{color:var(--blue)}section{border:1px solid var(--stroke);background:var(--paper);padding:26px 30px;border-radius:14px;box-shadow:0 3px 13px #092e4c08;margin-bottom:20px;scroll-margin-top:15px}
+h2{font-size:1.42rem;line-height:1.38;color:var(--navy);margin:0 0 16px}h3{font-size:1.09rem;color:var(--navy);margin:20px 0 8px}p{margin:9px 0 14px}strong{font-weight:730}ol,ul{padding-left:23px;margin:9px 0 13px}li{margin:5px 0}.small,.caption{color:var(--sub);font-size:.89rem}.caption{margin:8px 0}.callout{background:var(--soft);border-left:4px solid var(--blue);padding:15px 17px;border-radius:8px;margin:16px 0;font-weight:650}.warn{background:#fff7e8;border:1px solid #e9d9ba;padding:13px 16px;border-radius:9px;margin:14px 0}.label{display:inline-block;padding:2px 7px;border-radius:4px;background:var(--soft);color:#147b90;font-weight:720;font-size:.78rem;letter-spacing:.02em;vertical-align:baseline}
+.tscroll{overflow-x:auto;border:1px solid var(--stroke);border-radius:10px;margin:14px 0}table{width:100%;border-collapse:collapse;min-width:700px;font-size:.92rem}th,td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid var(--stroke)}th{white-space:nowrap;background:#eaf3fa;color:#25435f}tr:last-child td{border-bottom:0}
+.diagram{border:1px solid var(--stroke);border-radius:12px;padding:16px;background:var(--box);margin:13px 0;overflow-x:auto}
+.diagram svg{display:block;width:100%;min-width:750px;height:auto}
+.twocol{display:grid;grid-template-columns:1fr 1fr;gap:12px}.tile{border:1px solid var(--stroke);border-radius:10px;padding:13px 15px;background:var(--box)}.tile b{display:block;margin-bottom:4px}
+pre{white-space:pre-wrap;word-break:break-word;background:#122a40;color:#e3eff9;border-radius:10px;padding:15px;font:13px/1.7 ui-monospace,Menlo,Consolas,monospace}
+.eq{border-radius:9px;padding:12px 14px;background:var(--soft);text-align:center;font:600 16px/1.55 Georgia,serif;overflow-x:auto;margin:13px 0}
+.controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:15px 0}.controls label{display:block;font-size:13px;font-weight:660;color:var(--sub)}.controls input{width:100%;border:1px solid var(--stroke);background:var(--paper);color:var(--ink);border-radius:7px;padding:9px;font:inherit;font-size:16px;margin-top:6px}
+.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.metric{border:1px solid var(--stroke);background:var(--soft);border-radius:9px;padding:12px}.metric b{display:block;font-size:1.2rem;letter-spacing:-.02em}.metric span{font-size:12px;color:var(--sub)}
+footer{max-width:1140px;margin:auto;padding:0 24px 55px;color:var(--sub);font-size:13px}.references li{word-break:break-word;margin-bottom:11px}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.91em} 
+@media(max-width:850px){.layout{display:block;padding:14px 12px 40px}nav{position:static;display:flex;gap:12px;align-items:center;white-space:nowrap;overflow-x:auto;padding:9px 14px;margin-bottom:13px}nav strong{display:none}header{padding:38px 19px 32px}section{padding:21px 17px;margin-bottom:15px}.twocol{grid-template-columns:1fr}.controls{grid-template-columns:1fr}.metrics{grid-template-columns:1fr}.diagram svg{min-width:760px}}
+@media(prefers-color-scheme:dark){:root{--bg:#0c1928;--paper:#16283a;--ink:#e3edf5;--sub:#b1c3d1;--stroke:#344a60;--soft:#213b4d;--navy:#e4f0fa;--blue:#79d6f0;--teal:#7dd4bd;--orange:#efb46f;--purple:#c2b0f0;--box:#192f42}header{background:linear-gradient(110deg,#10253f,#104f6c)}th{background:#203b52;color:#d6e9f7}.warn{background:#3a2b1b;border-color:#71552e}.label{color:#94e4ee}}
+</style></head>
+<body>
+<header><small>ENGINEERING RESEARCH · GPU FABRIC & AGENTIC RL · 2026-10-25</small>
+<h1>Agentic RL：完整业务流程与网络数据流</h1>
+<p>从 Task → 多轮 Prefill/Decode → Tool/Sandbox → Reward/Advantage → Policy Training → Weight Sync，沿数据生命周期逐一说明：传什么、谁到谁、经过哪张网络、数据规模、Burst 和尾延迟特征。</p></header>
+<div class="layout"><nav aria-label="报告目录"><strong>目录</strong>
+<a href="#summary">01 核心结论</a><a href="#overview">02 全景拓扑图</a><a href="#timeline">03 一次迭代</a><a href="#matrix">04 网络流量矩阵</a><a href="#inner">05 GPU 内部网络</a><a href="#weights">06 权重同步</a><a href="#kv">07 P/D 与 KV</a><a href="#numbers">08 实测数据</a><a href="#calculator">09 可调流量模型</a><a href="#architecture">10 架构选择</a><a href="#instrument">11 网络观测</a><a href="#sources">12 原始资料</a>
+</nav><article>
+<section id="summary"><h2>01｜先说结论：RL 的网络并非一种流量，而是至少七条相互交织的数据路径</h2>
+<div class="callout">Online RL 的主循环是：训练任务产生 → GPU Rollout 模型执行 → 与 Sandbox 多轮交互 → Verifier 给 Reward → Trajectory 被训练 GPU 消化 → 得到新 Policy → 权重重新部署到 Rollout GPU。循环反复执行。真正的大流量可能发生在「模型内部训练通信」和「跨资源池权重同步」，而环境工具调用通常是小消息、高频、对异常和尾延迟敏感。</div>
+<div class="twocol">
+<div class="tile"><b>主数据循环</b>Task → Action/Observation 多轮 → Trajectory → Reward → Advantage → Gradient → 新权重。</div>
+<div class="tile"><b>两套不同的数据平面</b>GPU 训练/推理 Tensor 通信；跨 GPU/CPU/存储资源池的业务对象和控制通信。</div>
+<div class="tile"><b>最容易误判的点</b>Token 序列并不是 KV Cache；GPU 与同机 CPU 内存拷贝不等于网络流量；Gradient 同步不等于 Policy Weight Sync。</div>
+<div class="tile"><b>架构关键条件</b>是否 Co-located？Rollout 是否 P/D 分离？Policy 几个版本同步一次？KV 状态在本机还是远程？</div>
+</div>
+<p><span class="label">已验证</span> verl、NeMo RL 和 OSDI 2026 RollArt 均明确描述了 Rollout、Reward、Policy Training、Refit/Weight Sync 的可分离阶段；其具体部署并不唯一。<a href="#r1">[1]</a><a href="#r2">[2]</a><a href="#r3">[3]</a></p>
+</section>
+<section id="overview"><h2>02｜架构全景图：业务对象与网络数据方向</h2>
+<p>以下是一个<strong>物理分离的参考架构</strong>。颜色表示主要流量类型，箭头标方向。它是从公开系统抽象的综合图，不代表某一厂商的精确物理布线。</p>
+<div class="diagram"><svg viewBox="0 0 940 660" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Agentic RL 数据流架构示意图，Task 控制器至 Rollout、CPU Sandbox、Reward、Policy Trainer、权重分发，并区分各网络流量">
+<defs><marker id="arrb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#177d9b"/></marker><marker id="arro" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#bd7130"/></marker><marker id="arrg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#16836f"/></marker><marker id="arrp" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#8064b4"/></marker></defs>
+<rect x="6" y="6" width="928" height="648" rx="16" fill="none" stroke="#adbfcc" stroke-dasharray="5 6"/>
+<rect x="335" y="26" width="270" height="75" rx="12" fill="#d8ebf6" stroke="#469aba"/><text x="470" y="54" text-anchor="middle" font-weight="750" font-size="17" fill="#173850">Task / RL Controller</text><text x="470" y="76" text-anchor="middle" font-size="12" fill="#245c71">任务、Policy Version、Rollout 调度</text>
+<rect x="34" y="155" width="360" height="166" rx="12" fill="#e3f1f6" stroke="#70a8bb"/><text x="214" y="181" text-anchor="middle" fill="#163d58" font-size="17" font-weight="760">Rollout GPU Pool</text><text x="214" y="202" text-anchor="middle" fill="#345a72" font-size="12">vLLM / SGLang · 推理（可有 TP/EP）</text>
+<rect x="62" y="222" width="141" height="64" rx="8" fill="#fff" stroke="#83b8cd"/><text x="132" y="247" text-anchor="middle" fill="#183850" font-weight="700" font-size="14">Prefill (P)</text><text x="132" y="269" text-anchor="middle" fill="#607186" font-size="11">可与 Decode 共址</text>
+<rect x="225" y="222" width="141" height="64" rx="8" fill="#fff" stroke="#83b8cd"/><text x="295" y="247" text-anchor="middle" fill="#183850" font-weight="700" font-size="14">Decode (D)</text><text x="295" y="269" text-anchor="middle" fill="#607186" font-size="11">GPU KV Cache</text>
+<path d="M203 254H225" stroke="#16836f" stroke-width="3" marker-end="url(#arrg)"/><text x="213" y="215" fill="#0e7561" font-size="10" text-anchor="middle">可选 KV Transfer</text>
+<rect x="552" y="155" width="352" height="166" rx="12" fill="#fff0e1" stroke="#d9a06f"/><text x="728" y="181" text-anchor="middle" fill="#633f22" font-size="17" font-weight="760">Environment / Sandbox Pool</text><text x="728" y="203" text-anchor="middle" fill="#81592f" font-size="12">CPU · DRAM · NVMe · microVM / API Mock</text>
+<rect x="577" y="222" width="301" height="64" rx="8" fill="#fff" stroke="#d8b58a"/><text x="728" y="247" text-anchor="middle" fill="#604024" font-weight="700" font-size="14">Action Executor / State</text><text x="728" y="269" text-anchor="middle" fill="#8a6a46" font-size="11">Tool RPC · 结果 / 文件 / 状态快照</text>
+<path d="M470 101V131H215V155" stroke="#177d9b" stroke-width="2.5" fill="none" marker-end="url(#arrb)"/><text x="281" y="122" font-size="11" fill="#177d9b">F1 任务/控制</text>
+<path d="M395 229H549" stroke="#bd7130" stroke-width="3" marker-end="url(#arro)"/><path d="M549 264H395" stroke="#bd7130" stroke-width="3" marker-end="url(#arro)"/><text x="471" y="216" text-anchor="middle" font-size="12" fill="#a75f21">F2 Action</text><text x="471" y="282" text-anchor="middle" font-size="12" fill="#a75f21">F3 Observation</text>
+<rect x="552" y="369" width="352" height="92" rx="12" fill="#fff0e1" stroke="#d9a06f"/><text x="728" y="397" text-anchor="middle" fill="#633f22" font-size="16" font-weight="750">Reward / Verifier</text><text x="728" y="420" text-anchor="middle" fill="#81592f" font-size="12">规则、隐藏测试、可选 RM / Judge GPU</text>
+<rect x="37" y="369" width="360" height="92" rx="12" fill="#e9e4f6" stroke="#a99aca"/><text x="217" y="397" text-anchor="middle" fill="#4d4174" font-size="16" font-weight="750">Trajectory / Sample Buffer</text><text x="217" y="420" text-anchor="middle" fill="#706392" font-size="12">Token IDs、Actions、Mask、Logprobs、版本</text>
+<path d="M155 321V366" stroke="#8064b4" stroke-width="2.6" marker-end="url(#arrp)"/><text x="167" y="347" font-size="11" fill="#8064b4">F4 轨迹</text>
+<path d="M728 321V366" stroke="#bd7130" stroke-width="2.6" marker-end="url(#arro)"/><text x="741" y="348" font-size="11" fill="#a65d25">F5 终态</text>
+<path d="M552 414H398" stroke="#8064b4" stroke-width="2.6" marker-end="url(#arrp)"/><text x="473" y="404" text-anchor="middle" font-size="11" fill="#8064b4">F6 Reward</text>
+<rect x="196" y="522" width="539" height="96" rx="12" fill="#dff3eb" stroke="#69b59f"/><text x="465" y="550" text-anchor="middle" font-size="18" font-weight="760" fill="#164f45">Policy Training GPU Pool</text><text x="465" y="575" text-anchor="middle" font-size="13" fill="#26685e">Ref/Critic（按算法）· Advantage · Fwd/Bwd · Optimizer</text><text x="465" y="595" text-anchor="middle" font-size="12" fill="#347366">内部 NVLink + IB/RoCE：TP/EP/PP/DP 通信</text>
+<path d="M220 461V490H340V519" stroke="#8064b4" stroke-width="2.7" fill="none" marker-end="url(#arrp)"/><text x="196" y="497" fill="#7356a1" font-size="11">F7 训练 batch</text>
+<path d="M467 521V495H66V300H36V230" stroke="#16836f" stroke-width="3.0" fill="none" marker-end="url(#arrg)"/><text x="79" y="485" font-size="11" fill="#12806c">F8 Policy Weights（Refit）</text>
+<rect x="763" y="523" width="140" height="94" rx="11" fill="#fff" stroke="#86a9bf"/><text x="833" y="550" text-anchor="middle" font-size="13" font-weight="700" fill="#304c63">Checkpoint /</text><text x="833" y="569" text-anchor="middle" font-size="13" font-weight="700" fill="#304c63">Shared Store</text><text x="833" y="590" text-anchor="middle" font-size="11" fill="#49647c">可选：权重分发</text>
+<path d="M735 566H762" stroke="#16836f" stroke-width="2.7" marker-end="url(#arrg)"/>
+<text x="44" y="639" fill="#177d9b" font-size="11">蓝：控制</text><text x="160" y="639" fill="#a75f21" font-size="11">橙：Tool / 结果</text><text x="329" y="639" fill="#7656ad" font-size="11">紫：轨迹 / Reward</text><text x="529" y="639" fill="#147964" font-size="11">绿：权重 / KV / 训练</text>
+</svg></div>
+<p class="caption">手机上可横向滑动查看全图。F1–F8 是逻辑流量编号；同址时很多箭头变成本机 IPC/GPU 内拷贝，并不会经过交换机。实际实现中 Reward 可能从 Trajectory Buffer 或 Environment 直接接收输入，图中选择统一样本池作为抽象节点。</p>
+</section>
+<section id="timeline"><h2>03｜一次完整 GRPO / Agentic RL 迭代：业务动作和网络动作逐步对应</h2>
+<div class="tscroll"><table><thead><tr><th>阶段</th><th>执行什么业务</th><th>生成/消费的对象</th><th>网络数据方向</th></tr></thead><tbody>
+<tr><td>0. 启动（不是每步都做）</td><td>预训练/上次 RL Checkpoint 恢复；拉起 Actor、Rollout、Environment</td><td>模型权重、Optimizer 状态、镜像、任务池</td><td>共享存储 → Training GPU / Rollout GPU；镜像 → CPU Sandbox</td></tr>
+<tr><td>1. 发任务</td><td>采样 N 个 Prompt，每题产生 G 条探索轨迹（GRPO 示例）</td><td>TaskID、Prompt Tokens、预算、环境 ID、版本</td><td>Task Store / Controller → Rollout Scheduler / CPU Env</td></tr>
+<tr><td>2. 初始化环境</td><td>reset 沙箱、准备仓库/页面/业务 DB</td><td>初态、VM/容器镜像、Seed、测试工件</td><td>Storage / Env Manager → CPU Worker；一般不经 GPU Fabric</td></tr>
+<tr><td>3. 推理 Prefill</td><td>读取 Prompt + 历史 Observation，做 Prefill</td><td>Input Tokens / KV Cache</td><td>Controller → Rollout；若 P/D 分离才有 P→D KV 网络传输</td></tr>
+<tr><td>4. 推理 Decode</td><td>产生思考、工具调用参数或最终答案</td><td>生成 Token、Action JSON/Text、GPU KV</td><td>Rollout 内部 TP/EP Collectives；输出 Action → Sandbox</td></tr>
+<tr><td>5. 工具执行</td><td>执行 Shell、浏览器操作、API、仿真脚本</td><td>STDOUT/日志/网页/文件/执行结果</td><td>Sandbox → Rollout Observation；重复步骤 3–5</td></tr>
+<tr><td>6. 轨迹结束</td><td>停止条件满足或预算耗尽</td><td>完整 Trajectory：Token IDs、Action/Observation、Mask、版本</td><td>Rollout / Env → Trajectory Buffer / Reward</td></tr>
+<tr><td>7. Reward</td><td>运行隐藏测试/规则打分/可选 Reward LLM</td><td>标量或逐步 Reward、验证结果</td><td>Trajectory → Verifier → Sample Buffer</td></tr>
+<tr><td>8. 训练数据准备</td><td>GRPO 组内归一化优势；PPO 可选 Critic/Value；计算 old/ref logprobs</td><td>token/mask/advantage/logprob/value 等 Tensor</td><td>Sample Buffer ↔ Training/Ref/Critic GPU；部分模块可同址</td></tr>
+<tr><td>9. Policy 更新</td><td>Loss、Forward/Backward、Optimizer Step</td><td>Activation、Gradient、Optimizer State、新权重</td><td>训练 GPU 组内部 NVLink/IB/RoCE Collectives</td></tr>
+<tr><td>10. Refit / Sync</td><td>把更新后的权重部署到 Rollout 引擎</td><td>Weights Shards / Buckets、Policy Version</td><td>Trainer GPU → Rollout GPU，可能经过 RDMA / NCCL / CPU Store</td></tr>
+<tr><td>11. 继续下一轮</td><td>采样新任务或恢复长程未完成轨迹</td><td>任务队列、Checkpoint、KV/State</td><td>控制消息、可选 State Restore；回到步骤 1/3</td></tr>
+</tbody></table></div>
+<h3>三个容易混淆的“完整体”</h3>
+<ul>
+<li><strong>一个 Turn：</strong>模型观察当前上下文并发出一次回复/工具 Action。</li>
+<li><strong>一个 Trajectory / Rollout：</strong>一个任务从初态到终止，包含许多 Turn、Action 和 Observation。</li>
+<li><strong>一个训练 Step / Iteration：</strong>聚合一批 Trajectory、打 Reward、算优势和梯度、更新 Policy；异步系统中 Rollout 与 Training 可以重叠，不一定严格一轮一轮等待。</li>
+</ul>
+<p><span class="label">已验证</span> verl 官方 PPO 代码流程逐项列出 <code>generate_sequences → compute_log_prob → compute_ref_log_prob → compute_values → compute_scores → advantages → update_actor/update_critic</code>，NeMo RL GRPO 则支持不使用独立 Critic 的路径。<a href="#r1">[1]</a><a href="#r2">[2]</a></p>
+</section>
+<section id="matrix"><h2>04｜网络流量矩阵：通信在哪里发生？规模和性能诉求是什么？</h2>
+<div class="tscroll"><table><thead><tr><th>ID / 流量</th><th>源 → 目的</th><th>承载网络 / 机制</th><th>典型数据和大小</th><th>流量特征、QoS 诉求</th></tr></thead><tbody>
+<tr><td><b>F1 任务分发</b></td><td>Controller → Rollout / Env</td><td>RPC、Ray/TCP</td><td>任务描述、Token ID、采样参数；一般小–中对象</td><td>批量/控制平面；可弹性扩缩</td></tr>
+<tr><td><b>F2 Tool Action</b></td><td>Rollout → CPU Env</td><td>TCP/HTTP/gRPC/Ray</td><td>动作、代码、命令、输入文档；KB–MB，任务相关</td><td>高频、多轮、突发；优先可用性和时延稳定</td></tr>
+<tr><td><b>F3 Observation</b></td><td>CPU Env → Rollout</td><td>TCP/HTTP/gRPC/Ray</td><td>工具日志、页面、文本、图片、文件引用；可强烈变化</td><td>大小不均、p95/p99 影响迭代；通常不要求 RDMA 无损</td></tr>
+<tr><td><b>F4 Trajectory</b></td><td>Rollout → Buffer/Trainer</td><td>Ray 对象/共享存储/TCP</td><td>Tokens、Mask、Logprobs、Action Meta；通常远小于模型权重</td><td>按轨迹完成时间不规则到达；Group Barrier/Buffer</td></tr>
+<tr><td><b>F5–6 Reward</b></td><td>Env / Buffer ↔ Verifier</td><td>HTTP/RPC/对象存储</td><td>最终状态、测试结果、标量 Reward；可选独立 GPU Judge</td><td>随完成轨迹突发；验证时间通常差异很大</td></tr>
+<tr><td><b>F7 Train Batch</b></td><td>Buffer → Actor/Ref/Critic GPU</td><td>Ray/TCP/IPC/数据平面</td><td>Tokens + Old/Ref Logprobs、Advantages、Values</td><td>中批量、按 Step 消费；不等于 KV Cache</td></tr>
+<tr><td><b>F8 Weights Refit</b></td><td>Trainer GPU → Rollout GPU</td><td>本机 IPC；NCCL/IB/RDMA；TCP+Store</td><td>模型权重分片，GB–TB 级逻辑模型规模</td><td>周期性高量 Fan-out / 网络和恢复延迟敏感</td></tr>
+<tr><td><b>G1 Training Collectives</b></td><td>训练 GPU ↔ 训练 GPU</td><td>NVLink/NVSwitch、IB/RoCE</td><td>TP/EP Activation、DP Gradient、PP Activation</td><td>高频、大带宽，通信对迭代尾延迟敏感</td></tr>
+<tr><td><b>G2 Rollout Collectives</b></td><td>推理 GPU ↔ 推理 GPU</td><td>NVLink/NVSwitch、IB/RoCE</td><td>TP Reduction、MoE EP Token Dispatch/Combine</td><td>Prefill/Decode 行为差异；可能对小包延迟敏感</td></tr>
+<tr><td><b>O1 可选 P/D KV</b></td><td>Prefill GPU → Decode GPU</td><td>NIXL/UCX/RDMA/其他 KV Connector</td><td>KV Cache Blocks，而非 JSON/Token Text</td><td>高体量、迁移突发、TTFT 关键；仅 P/D 物理分离时</td></tr>
+<tr><td><b>O2 可选 State Persist</b></td><td>GPU↔CPU/Remote Store</td><td>同机 PCIe/C2C 或跨节点 RDMA/TCP</td><td>闲置 KV、Rollout 状态、Sandbox Snapshot</td><td>暂停/恢复驱动的 Burst，需区分本机和网络</td></tr>
+<tr><td><b>O3 Checkpoint</b></td><td>Trainer GPU / CPU → 持久存储</td><td>存储网络 / NVMe / 对象存储</td><td>参数、优化器、RNG、训练元数据</td><td>低频大流量；不要和每步 Refitted Weights 混同</td></tr>
+</tbody></table></div>
+<p class="caption">大小等级是工作负载分析，不是网络规格。包长分布无法仅由对象大小推导；例如 MB 级 RPC 可以拆成大量 MTU 帧，单次 Token Generation 内部可能对应多个 NCCL Collective。</p>
+</section>
+<section id="inner"><h2>05｜GPU 内部网络：和预训练比，哪些流量其实没变？</h2>
+<p>RL 的 <strong>Actor Policy Update</strong> 阶段仍然是在做大模型训练，TP/EP/PP/DP 等通信模式与传统预训练非常接近。只是每轮样本来自模型自身 Rollout，而不是固定网页语料。对 MoE 模型，EP Token Dispatch/Combine 与负载均衡问题仍然存在。</p>
+<div class="twocol">
+<div class="tile"><b>Training GPU 侧</b><span class="small">TP：跨并行卡交换部分计算结果。EP：MoE Tokens All-to-All。PP：Activation/Gradient 边界传递。DP：Gradient/Shard 同步。高同步强度，Scale-up/Scale-out 性能关键。</span></div>
+<div class="tile"><b>Rollout GPU 侧</b><span class="small">Prefill 的 Matmul + 可能较大 EP Token Burst；Decode 的逐 Token/小 Micro-batch、KV 读写、TP/EP 通信。并行策略可独立于 Trainer。</span></div>
+</div>
+<div class="warn"><b>反例：</b>如果每个 Rollout Replica 能完整装下模型且不使用跨 GPU TP/EP，那么其 GPU 内部网络需求可能很低。不能把“有 1000 条 Agent Trajectory”直接等价于“需要 1000 GPU All-to-All”。</div>
+<h3>Gradient 同步 ≠ Policy Weight Sync</h3>
+<p>前者发生在 <strong>Trainer 的梯度更新内部</strong>，每个训练迭代有多次 Collective；后者发生在 <strong>训练模型更新后到推理模型的部署</strong>，取决于部署拓扑和 Refit 频率。前者可以全部走原训练 Fabric，后者可能跨两组独立的 GPU Fabric。</p>
+</section>
+<section id="weights"><h2>06｜Policy Weight Sync：可能是 RL 新增的最大跨资源池网络负载</h2>
+<p>Weight Refit 不是传统 DP AllReduce，也不是每次都保存 Checkpoint。它要求把训练策略最新参数以<strong>适合 Rollout 推理引擎布局</strong>的形式，送到一个或多个推理副本。</p>
+<div class="tscroll"><table><thead><tr><th>部署</th><th>常见权重路径</th><th>网络特征</th></tr></thead><tbody>
+<tr><td>Co-located</td><td>同机 GPU/进程 → CUDA IPC、GPU 显存重排、模型唤醒</td><td>可减少跨网络搬运，但产生权重重装、HBM/显存竞争与阶段切换</td></tr>
+<tr><td>Disaggregated / 高速网络</td><td>Trainer GPU → Rollout GPU，经 NCCL Broadcast/Reshard 或 NIXL/UCX</td><td>大对象、周期性集中 Fan-out；源端、多目的 GPU、网络链路要按拓扑核算</td></tr>
+<tr><td>Disaggregated / 异构网络</td><td>Trainer → CPU Store（权重 Bucket）→ Rollout 集群内 Pull</td><td>跨集群“写一次、集群内多副本拉取”，减少反复穿越较慢跨池链路</td></tr>
+<tr><td>压缩/稀疏更新（受实现约束）</td><td>Sparse Delta / 压缩 Transport</td><td>实际数据量可能降低；不能假定所有算法/模型支持</td></tr>
+</tbody></table></div>
+<p><span class="label">已验证</span> NVIDIA NeMo RL 的 Weight Refit 官方指南列出了 Colocated CUDA IPC、NCCL、NCCL Reshard、Sparse Delta、NIXL 等路径及兼容限制。<a href="#r4">[4]</a></p>
+<p><span class="label">已验证</span> RollArt §6.3 在跨集群部分使用 Mooncake，权重先按例如 1GB Bucket 写到 CPU Resident Store，Rollout 再从集群内拉取；支持与持续 Rollout 重叠。<a href="#r3">[3]</a></p>
+<div class="eq">Aggregate logical distribution volume ≈ Model bytes × Number of full replicas</div>
+<p>如果仅从逻辑上考虑一个 32B 参数模型、BF16 权重：每份约 64 GB；如果有 4 份完整推理副本，逻辑总写入量约 256 GB。<strong>这不是“单根链路 256GB”</strong>，物理链路流量取决于模型分片、共享缓存/树形广播、复制层次和传输重试。分层重分片会重新决定每条链路的负载。</p>
+</section>
+<section id="kv"><h2>07｜RL Rollout 与 P/D Disaggregation：两种不同的状态流量</h2>
+<p>RL 训练本身不要求 Prefill/Decode 物理分离。如果 Rollout 在同一个推理实例内完成 P/D，则 KV Cache 留在该实例 HBM 中，不产生 P→D 网络传输。</p>
+<p><strong>只有选择 P/D 分离时</strong>，才有 Prefill GPU → Decode GPU 的 KV Transfer；当前 vLLM 明确提供 KV Connector 来协调两端缓存传输。<a href="#r5">[5]</a></p>
+<div class="diagram"><svg viewBox="0 0 860 235" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="两种 KV 数据移动路径：可选的 P到D传输以及Rollout暂停的状态存储"><rect x="20" y="17" rx="9" width="242" height="80" fill="#d8ecf4" stroke="#62a5bb"/><text x="141" y="49" text-anchor="middle" fill="#183b50" font-size="16" font-weight="700">Prefill GPU</text><text x="141" y="73" text-anchor="middle" fill="#35576d" font-size="12">Prompt → KV Blocks</text><rect x="600" y="17" rx="9" width="240" height="80" fill="#d8ecf4" stroke="#62a5bb"/><text x="720" y="49" text-anchor="middle" fill="#183b50" font-size="16" font-weight="700">Decode GPU</text><text x="720" y="73" text-anchor="middle" fill="#35576d" font-size="12">KV + 新 Token</text><path d="M263 57H596" stroke="#16836f" stroke-width="5"/><path d="M581 48L596 57L581 66" stroke="#16836f" fill="none" stroke-width="5"/><text x="429" y="46" font-size="14" fill="#14785f" text-anchor="middle">可选 P/D KV 网络传输</text><rect x="291" y="149" rx="9" width="280" height="68" fill="#fce9d4" stroke="#c49460"/><text x="431" y="178" text-anchor="middle" font-size="15" font-weight="700" fill="#5d3b24">CPU DRAM / Remote Store</text><text x="431" y="199" text-anchor="middle" font-size="12" fill="#725337">KV / State Checkpoint</text><path d="M720 98V128H470V149" stroke="#bd7130" stroke-width="3" fill="none"/><path d="M470 133L470 149L480 140" stroke="#bd7130" fill="none" stroke-width="3"/><text x="650" y="121" font-size="12" fill="#bd7130">暂停 / 恢复</text><path d="M392 149V119H142V99" stroke="#bd7130" stroke-width="2.2" fill="none"/><text x="280" y="133" font-size="11" fill="#b27138">仅按部署需要</text></svg></div>
+<p><strong>另一条状态流量</strong>来自长程 Agent 的暂停/恢复：空闲 Trajectory 的 GPU KV、执行状态或 Sandbox 快照可能搬到 Host DRAM、远端 DRAM 或 NVMe。此时需要判断<strong>状态迁移是否跨节点</strong>。如果仍在同一台服务器，可能只有 PCIe、CPU Memory 或 NVLink-C2C 负载，而不是 Ethernet/RDMA Fabric 流量。</p>
+<p class="caption">图示是逻辑路径，不代表 P/D 的 KV 必须写入 CPU Store，也不代表 CPU Store 能不经对应 Runtime 直接跨任何 GPU 格式共享 KV。</p>
+</section>
+<section id="numbers"><h2>08｜OSDI 2026 RollArt：可以直接拿来做网络分析的实测数据</h2>
+<h3>8.1 传权重耗时：同一研究中的 TCP 和 RDMA 对照</h3>
+<div class="tscroll"><table><thead><tr><th>模型</th><th>公开权重数据量</th><th>200G Ethernet / TCP</th><th>400G IB / RDMA</th><th>相对加速</th></tr></thead><tbody><tr><td>Qwen3-8B</td><td>15.26 GB</td><td>6.911 s</td><td>5.466 s</td><td>1.264×</td></tr><tr><td>Qwen3-14B</td><td>27.51 GB</td><td>14.437 s</td><td>5.817 s</td><td>2.482×</td></tr><tr><td>Qwen3-32B</td><td>61.02 GB</td><td>29.649 s</td><td>9.442 s</td><td>3.140×</td></tr></tbody></table></div>
+<p class="caption">来源：RollArt PDF p.6（论文印刷页 867），Table 3。表格是其 Mooncake 路径与两种集群网络条件下的端到端测量，不是同带宽下“TCP vs RDMA 协议开销”的纯粹公平比较。<a href="#r3">[3]</a></p>
+<h3>8.2 交互与 Reward：体量比权重小得多</h3>
+<div class="tscroll"><table><thead><tr><th>指标</th><th>RollArt 测量值</th><th>含义</th></tr></thead><tbody>
+<tr><td>Env Interaction 最大传输量</td><td>2.7 MB</td><td>论文测试集合中的上限，不是行业通用上限</td></tr>
+<tr><td>Env Interaction 每调用平均/最大传输耗时</td><td>0.02 s / 1.4 s</td><td>平均低、长尾大；交互步骤积累后可能显著</td></tr>
+<tr><td>Remote Reward 最大传输量</td><td>5.2 MB</td><td>整条轨迹或奖励请求可比单次工具调用更大</td></tr>
+<tr><td>Remote Reward 每调用平均/最大传输耗时</td><td>0.01 s / 2.1 s</td><td>集中在轨迹结束时产生 Burst</td></tr>
+</tbody></table></div>
+<p class="caption">来源：RollArt §7.5，PDF p.14，论文印刷页 875。<a href="#r3">[3]</a></p>
+<h3>8.3 权重传输与异步隐藏</h3>
+<div class="tscroll"><table><thead><tr><th>模型</th><th>未经重叠的 Push+Pull（秒）</th><th>Push（秒）</th><th>累计 Pull（秒）</th><th>暴露 Pull 开销（秒）</th></tr></thead><tbody><tr><td>8B</td><td>38.6</td><td>32.4</td><td>6.2</td><td>1.4</td></tr><tr><td>14B</td><td>84.1</td><td>67.8</td><td>16.3</td><td>5.1</td></tr><tr><td>32B</td><td>157.0</td><td>127.3</td><td>29.7</td><td>9.6</td></tr></tbody></table></div>
+<p class="caption">来源：RollArt §7.4 Table 4。注意「暴露 Pull」并非同步总传输时间，不能将 9.6 s 错当成整个跨集群 Weight Push+Pull。论文报告通过异步 Pipeline 隐藏 67–78% 的 Pull 时间；Push 和其它阶段的重叠同样影响最终 Step Time。<a href="#r3">[3]</a></p>
+<h3>8.4 真实大规模任务的长尾</h3>
+<p>RollArt §8 报告其在 <strong>3000+ GPU</strong> 生产规模下的数千亿参数 MoE 训练，真实任务涉及 1–48 Turn；某些任务响应长度的最大值达到均值的 5–9 倍，环境交互 Turn 最大值超过均值的 40 倍。某些迭代中 Trainer 因等待 SampleBuffer 凑足轨迹而空闲，占迭代时间最高达 62%。<a href="#r3">[3]</a></p>
+<div class="callout">对网络架构而言，重要的不是只按「平均 Token/s」计算带宽，而是把 <b>Policy Weight Fan-out</b>、<b>任务提交/结果长尾</b>、<b>状态恢复 Burst</b> 叠加到同一物理网络的时间轴，再分析队列和尾延迟。</div>
+</section>
+<section id="calculator"><h2>09｜可调估算：一轮 RL 究竟会搬运多少数据？</h2>
+<p>以下简化工具可以在手机浏览器直接修改参数。它估算<strong>逻辑业务数据量</strong>，而非自动等于交换机端口流量。没有做网络协议开销、梯度通信、KV 移动、分片重排或重传建模。</p>
+<div class="controls">
+<div><label for="tasks">每轮任务数（Prompts）</label><input type="number" min="1" max="1000000" step="1" id="tasks" value="64"/></div>
+<div><label for="group">每题 Rollout 数（GRPO Group Size）</label><input type="number" min="1" max="128" step="1" id="group" value="8"/></div>
+<div><label for="tokens">每条轨迹平均 Tokens（输入+生成历史）</label><input type="number" min="1" max="2000000" step="1" id="tokens" value="16000"/></div>
+<div><label for="fields">每 Token 随轨迹传输的字节数（例如 16 B）</label><input type="number" min="4" max="128" step="4" id="fields" value="16"/></div>
+<div><label for="params">Policy 参数量（Billion）</label><input type="number" min=".1" max="10000" step=".1" id="params" value="32"/></div>
+<div><label for="replicas">完整推理副本数（逻辑 Replica）</label><input type="number" min="1" max="10000" step="1" id="replicas" value="4"/></div>
+<div><label for="sync">策略同步周期（秒）</label><input type="number" min="1" max="1000000" step="1" id="sync" value="600"/></div>
+<div><label for="rpc">全部 Sandbox 的总 Tool Call/s</label><input type="number" min="0" max="100000000" step="1" id="rpc" value="1000"/></div>
+<div><label for="payload">每次 Tool 调用请求+响应平均 KiB</label><input type="number" min="0" max="1000000" step="1" id="payload" value="8"/></div>
+<div><label for="weightbytes">每参数传输字节数（BF16=2）</label><input type="number" min=".25" max="16" step=".25" id="weightbytes" value="2"/></div>
+</div>
+<div class="metrics">
+<div class="metric"><span>一轮 Rollouts 数</span><b id="mrollouts">512</b></div>
+<div class="metric"><span>Trajectory 主张量大小</span><b id="mtraj">131 MB</b></div>
+<div class="metric"><span>一份模型权重大小</span><b id="mweight">64 GB</b></div>
+<div class="metric"><span>副本总逻辑权重分发量</span><b id="mcopies">256 GB</b></div>
+<div class="metric"><span>均摊权重分发逻辑速率</span><b id="mbw">3.41 Gbps</b></div>
+<div class="metric"><span>Sandbox 工具 RPC 合计速率</span><b id="mrpc">65.54 Mbps</b></div>
+</div>
+<p class="caption">计算口径：MB/GB=10³ 进制；KiB=1024 字节。Trajectory 对象只算平均 Token 数×选定单 Token 字节数，不计额外 Prompt 文本、Tool Log、Reward 模型输入、图片或多次中间缓冲拷贝。权重分发速率 = 逻辑字节总量×8/同步周期；不是某根交换机链路的必需带宽。真实硬件要映射每个 Replica 的 TP/EP Shard、传播树、数据路径和发散时间。</p>
+<div class="eq">Traj_bytes = Tasks × Group × AvgTokens × Bytes/token</div>
+<div class="eq">Weight_sync_avg = Params × Bytes/param × FullReplicas / Interval</div>
+<div class="eq">Tool_RPC_avg = Aggregate Calls/s × (Request+Response Bytes/call)</div>
+<script>
+(function(){
+const names=['tasks','group','tokens','fields','params','replicas','sync','rpc','payload','weightbytes'];
+function value(k){let v=Number(document.getElementById(k).value);return Number.isFinite(v)?Math.max(0,v):0}
+function fmt(x,u){if(!Number.isFinite(x))return '—';let n=x>=10000?x.toExponential(2):x.toLocaleString('zh-CN',{maximumFractionDigits:2});return n+' '+u}
+function calculate(){const R=value('tasks')*value('group');const T=R*value('tokens')*value('fields');const W=value('params')*1e9*value('weightbytes');const C=W*value('replicas');const bw=value('sync')>0?C*8/value('sync')/1e9:0;const tools=value('rpc')*value('payload')*1024*8/1e6;
+document.getElementById('mrollouts').textContent=R.toLocaleString('zh-CN');
+document.getElementById('mtraj').textContent=fmt(T/1e6,'MB');
+document.getElementById('mweight').textContent=fmt(W/1e9,'GB');
+document.getElementById('mcopies').textContent=fmt(C/1e9,'GB');
+document.getElementById('mbw').textContent=fmt(bw,'Gbps');
+document.getElementById('mrpc').textContent=fmt(tools,'Mbps');}
+names.forEach(n=>document.getElementById(n).addEventListener('input',calculate));calculate();
+})();
+</script>
+<p><b>一个对比：</b>默认示例中，训练样本主张量仅约 131 MB，而一次向 4 份逻辑 Replica 分发 32B BF16 权重为 256 GB。但这<strong>不说明它们经过同一根链路</strong>。若 Trainer/Rollout 共址、或先写一次 CPU Store 再内部广播，交换机跨池带宽需求可能显著不同。</p>
+</section>
+<section id="architecture"><h2>10｜对 Scale-up / Scale-out 架构设计的直接结论</h2>
+<div class="tscroll"><table><thead><tr><th>架构</th><th>主要跨 Fabric 流量</th><th>优点</th><th>主要代价</th></tr></thead><tbody>
+<tr><td>Co-located</td><td>训练 Collective；环境 RPC；Checkpoint（部分同机）</td><td>Weight Refit 更靠近 GPU 内部搬运；复用训练物理 Fabric</td><td>Rollout 与 Training 时间复用，HBM/内存竞争，长程轨迹管理复杂</td></tr>
+<tr><td>Disaggregated</td><td>训练 Collective + 权重跨池 Fan-out + Trajectory/Reward + Tool RPC + 可选 KV</td><td>Trainer / Rollout / Env 可以并行、异构最优部署</td><td>权重更新与 Policy Staleness；跨网络链路负载新增</td></tr>
+<tr><td>Hybrid / Elastic</td><td>随资源编排变化</td><td>按训练/推理占比动态搬移资源，提高整体利用率的可能性</td><td>状态归属、带宽规划和调度边界更难预测</td></tr>
+</tbody></table></div>
+<h3>对网络芯片研究最重要的四点</h3>
+<ol>
+<li><strong>训练 Scale-up Fabric：</strong>核心仍是 TP/EP/DP 通信，Agentic RL 不自动要求扩大 Load/Store 物理域。</li>
+<li><strong>训练 ↔ 推理跨池 Fabric：</strong>需要分析权重广播、Reshard、版本更新频率、大流量 Burst 以及队列和 PFC/ECN 交互；若共享现有 Fabric，须避免影响训练 Collective。</li>
+<li><strong>推理内部 Fabric：</strong>是否 P/D 分离、EP/TP 是否跨机、KV 是否跨节点，决定网络内部是否出现较大 KV Transfer 与高频同步。</li>
+<li><strong>CPU Environment 网络：</strong>不一定需要 RDMA 或专门 Scale-up，关键是稳定 RTT、RPC 并发、超时、Sandbox 重启与存储快照长尾。</li>
+</ol>
+<p><span class="label">工程判断</span> 不应该一开始就为 RL 设计一张“全新的专用高带宽网络”；更合理的方法是从 Workload Matrix 出发，确认是否物理共址、每个通信流具体经过哪些 NIC 和交换机，再定位不可接受的瓶颈。</p>
+</section>
+<section id="instrument"><h2>11｜真正做端到端网络流量模型，还缺哪些参数？</h2>
+<div class="tscroll"><table><thead><tr><th>必须采集</th><th>为什么</th><th>指标例子</th></tr></thead><tbody>
+<tr><td>每轮任务数 / Group / Max Tokens</td><td>决定 Trajectory Buffer 和并发推理量</td><td>Prompt/s、Rollout/s、Token 分位数、Turn 数分布</td></tr>
+<tr><td>训练/推理资源映射</td><td>决定每条逻辑流究竟穿过哪张网</td><td>Trainer GPU 数、TP/EP/DP、Rollout 副本与 P/D 拆分</td></tr>
+<tr><td>权重分片与同步策略</td><td>决定高峰跨池 Bytes 和 Fan-out</td><td>Shards/Replica、Refit Period、同步耗时 P50/P99、压缩比例</td></tr>
+<tr><td>KV 状态生命周期</td><td>决定有没有 RDMA KV、State Restore Burst</td><td>Hit Ratio、Bytes Migrated、恢复并发、p95/p99</td></tr>
+<tr><td>工具调用与结果</td><td>决定 CPU 业务网的短 RPC、尾延迟</td><td>Calls/s、Payload CDF、失败/超时率、Burst、CPU 压力</td></tr>
+<tr><td>训练内部通信</td><td>决定现有训练 Fabric 的剩余容量</td><td>Collective 类型、EP Fan-out、每层 Bytes、Tput、p99 延迟</td></tr>
+<tr><td>异步界限与 SampleBuffer</td><td>决定 Trainer 空闲比例和质量收敛</td><td>Policy Staleness、Oldest Traj Age、Batch Ready Time</td></tr>
+</tbody></table></div>
+<p><b>建议建模方法：</b>先对每个物理 Fabric 定义节点与链路，再将 F1–F8/G1–G2/O1–O3 映射到源、目的、数据量分布、时间序列；最后分别计算平均速率、95/99 分位瞬时速率和流完成时间（FCT）。对于 TCP/RDMA 共用网络，需分析拥塞传播、队列优先级、ECN/PFC 与 Collective 之间的相互影响；这些必须在明确 NIC/交换机/拥塞控制配置后才能闭合。</p>
+<div class="callout">研究结论：Agentic RL 新增的核心网络问题不是“所有 GPU 都进行 RL All-to-All”，而是<strong>高同步训练通信 + 大体量周期性 Policy 同步 + 高并发小对象环境 RPC + 可选 P/D KV 与长程恢复 Burst</strong>如何在时间上叠加及隔离。</div>
+</section>
+<section id="sources"><h2>12｜一手文献与出处</h2>
+<ol class="references">
+<li id="r1"><a href="https://verl.readthedocs.io/en/latest/hybrid_flow.html" target="_blank" rel="noopener">verl HybridFlow Programming Guide</a>：Overall Execution Diagram、Codebase walkthrough (PPO)；Controller、ActorRolloutRef、Reward/Critic WorkerGroup，PPO 步骤。</li>
+<li id="r2"><a href="https://docs.nvidia.com/nemo/rl/latest/guides/grpo.html" target="_blank" rel="noopener">NVIDIA NeMo RL — An In-depth Walkthrough of GRPO</a>：Data、Environment、Policy、Generation、Loss，含 Multi-environment / Ray。</li>
+<li id="r3"><a href="https://www.usenix.org/system/files/osdi26-gao.pdf" target="_blank" rel="noopener">RollArt: Disaggregated Multi-Task Agentic RL Training at Scale（OSDI 2026）</a>：PDF p.3–6 / §2–4 主流程及流量；p.10–11 / §6.3 异步权重 Bucket；p.13–14 / §7.4–7.5 Table 3、4、网络 I/O；p.14–15 / §8 生产 3000+ GPU 长尾。网页入口：<a href="https://www.usenix.org/conference/osdi26/presentation/gao" target="_blank" rel="noopener">USENIX Paper</a>。</li>
+<li id="r4"><a href="https://docs.nvidia.com/nemo/rl/nightly/guides/refit.html" target="_blank" rel="noopener">NeMo RL — Weight Refit: Choosing a Transport</a>：CUDA IPC、NCCL、Sparse Delta、NIXL 的权重同步选型、约束和不同部署条件。</li>
+<li id="r5"><a href="https://docs.vllm.ai/en/latest/features/disagg_prefill/" target="_blank" rel="noopener">vLLM — Disaggregated Prefilling</a>：Prefill 和 Decode 两套实例及 KV Connector，强调仅该模式出现跨实例 KV Transfer。</li>
+<li id="r6"><a href="https://docs.nvidia.com/nemo/rl/latest/guides/async-grpo.html" target="_blank" rel="noopener">NeMo RL — Train with Async GRPO</a>：Collector、Replay Buffer、Training Loop、Weight Sync 的异步关系。</li>
+<li id="r7"><a href="https://docs.nvidia.com/nemo/rl/nightly/about/performance-summary.html" target="_blank" rel="noopener">NeMo RL — Performance Summary</a>：明确 Step Time 包含 Training、Generation、Policy Logprobs、Refit，不应只报 Trainer MFU。</li>
+</ol>
+<p class="small"><b>可信度标记：</b>原始论文/官方文档和明确数值标为“已验证”；综合拓扑和架构建议标为“工程判断”；本报告计算器输出与 BF16/32B 示例为条件性估算。网络包长、真实交换机 Buffer/ECN/PFC 负载、真实 Kimi 生产 RL 通信矩阵并无充分公开证据，本文没有虚构。</p>
+</section>
+</article></div><footer>2026-10-25 · 技术研究报告 · <a href="../">返回研究报告首页</a></footer>
+</body></html>
