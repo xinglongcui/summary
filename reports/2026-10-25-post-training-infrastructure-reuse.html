@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="description" content="Post-training 后训练是否能复用预训练 GPU、Scale-up、Scale-out 网络和基础设施？基于 Kimi K3、verl、NeMo RL、RollArt 的工程研究。">
+<title>Post-training 能否复用预训练基础设施？｜工程研究</title>
+<style>
+:root{--bg:#f4f6f9;--paper:#fff;--ink:#1a2c43;--sub:#566779;--line:#dce3ec;--head:#0e3356;--accent:#0c7694;--pale:#edf6fa;--warm:#fff7e9;--radius:14px}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.85 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
+header{background:linear-gradient(115deg,#112e51 5%,#075b77);color:white;padding:55px max(22px,calc((100vw - 1050px)/2)) 40px}
+header h1{font-size:clamp(1.7rem,3.5vw,2.65rem);line-height:1.3;margin:12px 0}header p{opacity:.89;margin:0;max-width:850px}header small{letter-spacing:.05em;color:#c6e5ea}
+main{max-width:1050px;margin:0 auto;display:grid;grid-template-columns:210px minmax(0,1fr);gap:30px;padding:28px 18px 70px}
+nav{position:sticky;top:20px;align-self:start;padding:18px;background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);font-size:14px}
+nav strong{display:block;margin-bottom:12px}nav a{display:block;text-decoration:none;padding:6px 0;color:var(--sub)}nav a:hover{color:var(--accent)}
+article{min-width:0}section{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:25px 30px;margin-bottom:20px;box-shadow:0 2px 13px #1c344708}
+h2{font-size:1.4rem;color:var(--head);margin:0 0 15px;line-height:1.35}h3{font-size:1.08rem;margin:24px 0 8px;color:var(--head)}p{margin:9px 0 15px}b,strong{font-weight:700}ul,ol{padding-left:23px;margin:10px 0}li{margin:4px 0}a{color:var(--accent)}
+.card{border:1px solid var(--line);padding:15px;border-radius:10px;background:var(--pale);margin:14px 0}.warning{background:var(--warm);border-color:#e4d6b6}
+.quote{border-left:4px solid #20899b;padding:8px 17px;background:var(--pale);font-weight:650;margin:22px 0}
+.tag{font-size:.75rem;font-weight:750;border-radius:4px;padding:2px 7px;background:var(--pale);color:#086d87}
+.table-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px}table{width:100%;border-collapse:collapse;min-width:610px;font-size:.93rem}th{background:#ecf2f8;color:#29435b;text-align:left;white-space:nowrap}th,td{padding:11px 12px;vertical-align:top;border-bottom:1px solid var(--line)}tr:last-child td{border-bottom:0}
+.flow{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 0}.flow .stage{width:min(440px,100%);padding:14px 15px;border:1px solid #bfd5e3;background:var(--pale);border-radius:10px;text-align:center;font-weight:650}.flow .arrow{color:var(--accent);font-size:20px;line-height:1}
+.twocol{display:grid;grid-template-columns:1fr 1fr;gap:12px}.mini{padding:14px;border:1px solid var(--line);border-radius:9px}.mini b{display:block}
+pre{white-space:pre-wrap;word-break:break-word;border-radius:9px;padding:15px;background:#10263f;color:#e0effa;font:13px/1.6 Consolas,Menlo,monospace;overflow:auto}
+.math{margin:15px 0;overflow-x:auto;padding:12px;background:var(--pale);border-radius:8px;text-align:center;font:600 17px/1.5 Georgia,serif}
+footer{max-width:1050px;margin:auto;padding:0 22px 55px;font-size:13px;color:var(--sub)}.sources li{word-break:break-word}
+@media(max-width:790px){main{display:block;padding:17px 13px 42px}nav{position:static;display:flex;gap:12px;overflow-x:auto;white-space:nowrap;margin-bottom:15px;padding:10px 14px}nav strong{display:none}nav a{padding:6px 0}section{padding:21px 18px;margin-bottom:15px}.twocol{grid-template-columns:1fr}header{padding:39px 20px 33px}}
+@media(prefers-color-scheme:dark){:root{--bg:#101927;--paper:#17263a;--ink:#e2eaf4;--sub:#afc1d2;--line:#33465d;--head:#e4f1ff;--accent:#78d4e9;--pale:#1b3949;--warm:#352e20}header{background:linear-gradient(115deg,#0b223c,#164b66)}th{background:#20334b;color:#e6effa}pre{background:#0b1d30}.flow .stage{border-color:#43687a}}
+</style>
+</head>
+<body>
+<header>
+<small>ENGINEERING RESEARCH / AI SYSTEMS / 2026-10-25</small>
+<h1>Post-training 能否直接复用预训练集群？</h1>
+<p>区分物理 GPU 与网络、训练软件栈、Rollout 推理、Environment/Sandbox；比较 Co-located、Disaggregated 和 Hybrid，并分析 Scale-up/Scale-out 的实际复用边界。</p>
+</header>
+<main>
+<nav aria-label="章节目录"><strong>目录</strong>
+<a href="#conclusion">01 结论</a><a href="#stages">02 分阶段判断</a><a href="#fabric">03 物理网络复用</a><a href="#architectures">04 三种部署</a><a href="#network">05 网络流量变化</a><a href="#model">06 决策模型</a><a href="#cases">07 一手案例</a><a href="#practical">08 改造清单</a><a href="#sources">资料来源</a>
+</nav>
+<article>
+<section id="conclusion">
+<h2>01｜结论：硬件可复用，不等于系统可原样复用</h2>
+<div class="quote">绝大多数 Post-training 不需要另建一套物理 Scale-up / Scale-out Fabric；但 Online RL，尤其长程 Agentic RL，需要新增推理、奖励、轨迹、状态恢复和调度等软件能力，并可能需要独立的 CPU/Sandbox 资源池。</div>
+<div class="table-scroll"><table><thead><tr><th>层面</th><th>能否复用</th><th>工程边界</th></tr></thead><tbody>
+<tr><td>GPU / HBM / NVLink 或同类 Scale-up</td><td><strong>通常可以</strong></td><td>训练时继续承载 TP/EP/PP 等；Rollout 则采用推理式并行配置</td></tr>
+<tr><td>IB / RoCE / Ethernet Scale-out</td><td><strong>物理网络通常可以</strong></td><td>需要校核 Policy Sync、轨迹传输、KV 迁移和新的长尾/Burst 分布</td></tr>
+<tr><td>预训练框架与 Checkpoint</td><td><strong>部分直接复用</strong></td><td>Trainer 复用 FSDP/Megatron 等；在线 RL 需要接 vLLM/SGLang 和 Reward</td></tr>
+<tr><td>调度、缓存、控制系统</td><td><strong>不能完全原样复用</strong></td><td>引入 Actor/Rollout/Verifier/Policy Version、KV Cache 与恢复机制</td></tr>
+<tr><td>CPU / DRAM / NVMe / Sandbox</td><td><strong>按任务类型</strong></td><td>数学 RLVR 可以很轻；代码/Browser/仿真 Agent 往往需大规模独立隔离环境</td></tr>
+</tbody></table></div>
+<p><span class="tag">设计判断</span> 「资源池逻辑分离」不等于「购买独立 GPU 集群」，更不等于「必须设计新网络协议」。</p>
+</section>
+<section id="stages">
+<h2>02｜区分 SFT、离线偏好训练、Online RL 和 Agentic RL</h2>
+<div class="table-scroll"><table><thead><tr><th>工作负载</th><th>训练方式</th><th>相对于 Pre-training 的新增内容</th><th>基础设施结论</th></tr></thead><tbody>
+<tr><td>SFT</td><td>Teacher Forcing + Forward/Backward</td><td>数据处理和 Loss/Mask 差异，通常无模型内生采样闭环</td><td>基本复用原训练集群和网络</td></tr>
+<tr><td>DPO / 离线偏好优化</td><td>现成成对偏好样本的优化</td><td>Reference Policy、额外 Forward/Log-prob</td><td>仍非常接近普通训练；可能增加显存和计算</td></tr>
+<tr><td>Online PPO/GRPO/RLVR</td><td>生成 Rollout → Reward → Update</td><td>推理服务引擎、轨迹 Buffer、参数同步与 RL 调度</td><td>可以共址；需要 RL 专用软件栈</td></tr>
+<tr><td>Long-horizon Agentic RL</td><td>多轮推理 ↔ Tool/Environment，长轨迹，恢复</td><td>Sandbox、状态快照、KV/Prefix、并发/尾延迟优化</td><td>物理 GPU 网络可复用，但环境和状态服务必须专门设计</td></tr>
+</tbody></table></div>
+<p><strong>反例很重要：</strong>后训练不是一个统一工作负载。不能把 Agentic RL 的 CPU Sandbox 和异步流量要求，强加到普通 SFT 或短推理 RLVR 上。</p>
+</section>
+<section id="fabric">
+<h2>03｜从网络架构看：哪些仍然沿用预训练 Fabric？</h2>
+<h3>3.1 Scale-up：训练部分几乎延续原通信要求</h3>
+<p>Policy Gradient Update 仍需执行模型 Forward/Backward。对大型 MoE 而言，训练 TP/EP/PP 和跨节点 DP 的通信需求仍然存在。已有 NVLink/NVSwitch 类 Scale-up 和 RDMA Scale-out 依然有价值；Online RL 并不会消灭训练网络。</p>
+<p>但 <strong>Rollout 是推理</strong>：它更关注 Decode、KV 容量、Prefix 命中与动态并发，可能使用与训练不同的 TP/EP 配置。两者在同一个物理 GPU Group 上切换时，需要重载权重、释放/恢复 KV 或重新配置资源，不能当成同一个 Kernel Pipeline。</p>
+<h3>3.2 Scale-out：能承载，但业务不再只有训练 Collective</h3>
+<p>现有 Ethernet/RoCE/IB 通常能承载新业务，无需专门的“RL 网络协议”。然而 <strong>带宽容量够</strong>不表示<strong>共享拥塞下的性能也够</strong>。</p>
+<div class="card"><strong>工程需要重新校核：</strong>Policy 权重广播/同步、Checkpoint 与缓存访问、Long-rollout 恢复时的 KV/State Burst、CPU Sandbox RPC（对 RTT 敏感）、在线训练 Collective（对尾延迟敏感）。若共用一个承载面，需做工作负载隔离、优先级和队列观测；但不能一概要求所有 RPC 使用无损 RDMA。</div>
+<h3>3.3 不推荐简单增加一个巨大 Scale-up Domain</h3>
+<p>训练时紧耦合的模型并行组可以利用低延迟 Scale-up；CPU Sandbox、Trajectory Store、验证器和 Rollout 的跨池控制流没有天然的 Load/Store 同域需求。把所有计算资源塞入单一 Scale-up Fabric 不能从 Agentic RL 本身推导出来。<span class="tag">工程推断</span></p>
+</section>
+<section id="architectures">
+<h2>04｜三种现实可选架构</h2>
+<div class="twocol">
+<div class="mini"><b>A. Co-located 共址 / 分时</b><small>同一组 GPU 在 Rollout 与 Update 间切换</small><p>优点：易复用已有训练 GPU、避免远程大规模权重分发、减少闲置；代价：HBM/DRAM/KV 竞争、阶段切换、长尾阻塞。</p></div>
+<div class="mini"><b>B. Disaggregated 物理解耦</b><small>训练 GPU 池 + Rollout GPU 池 + CPU 环境池</small><p>优点：各阶段可独立调度，异构设备按计算/带宽适配；代价：Policy Sync、额外传输、版本陈旧、资源利用率平衡。</p></div>
+</div>
+<div class="card"><b>C. Hybrid / Elastic 混合架构</b><p>部分 Rollout GPU 常驻，部分 Training GPU 在等待数据时临时提供 Rollout 算力。verl 的动态资源调度文档已公开这种 Standalone + Hybrid 组合，并有特定模型下 15.3% 端到端训练时间缩短的实验结果。这意味着不需要以「全共址」和「全解耦」二选一。<a href="#ref6">[6]</a></p></div>
+<div class="flow">
+<div class="stage">已有预训练集群：GPU + Scale-up + Scale-out + Storage</div><div class="arrow">↓ 物理资源保持复用，增加角色与调度</div>
+<div class="stage">Training GPU（Policy/Gradient，继续使用原训练通信）</div><div class="arrow">⇅ Policy Weights / Version、Trajectory</div>
+<div class="stage">Rollout GPU（vLLM / SGLang，Decode、KV、Prefix）</div><div class="arrow">⇅ Tool Requests / Results</div>
+<div class="stage">CPU Sandbox / Verifier / DRAM + NVMe State</div>
+</div>
+<p>图示是<strong>逻辑资源层次</strong>，不是强制物理布线。三个角色既可以共享服务器/机柜，也可以位于独立的节点或资源池。</p>
+</section>
+<section id="network">
+<h2>05｜新增通信与现有网络的适配性</h2>
+<div class="table-scroll"><table><thead><tr><th>流量类型</th><th>已有训练网络能否承载</th><th>变化点 / 主要风险</th></tr></thead><tbody>
+<tr><td>TP/EP/PP/DP 通信</td><td>✓ 原有 Fabric 继续使用</td><td>同步 Collective / All-to-All；保证训练 QoS，不被其他业务挤压</td></tr>
+<tr><td>Policy Weight Sync</td><td>✓ RDMA / Ethernet 可承载</td><td>可能是高体量周期性 Fan-out，负担取决于分片/副本数/同步频率</td></tr>
+<tr><td>Rollout KV / State Resume</td><td>✓ 依部署模式而定</td><td>GPU↔Host 或跨节点，可能出现集中恢复 Burst；不是所有部署都有跨网络传输</td></tr>
+<tr><td>Trajectory / Reward / Logprobs</td><td>✓ 现有网络与存储</td><td>大小不规则、版本一致性与队列拥堵，通常非低延迟 Load/Store</td></tr>
+<tr><td>Sandbox Tool RPC / Filesystem</td><td>✓ TCP/IP / 存储网络</td><td>大量小交互、冷启动、镜像读取、快照 I/O；可能需要独立 CPU/IO 容量</td></tr>
+</tbody></table></div>
+<h3>5.1 权重同步的数量级：不要误以为每卡搬运全模型</h3>
+<p>以 Kimi K3 披露的 2.8T 总参数为例：若全部权重采用 BF16，逻辑数据约 5.6 TB。这个值只是<strong>整个模型全量权重</strong>的规模上界示意，绝不等于每张 GPU 的搬运量，更不等于每一步跨机架网络必须传输 5.6 TB。实际同步量由权重切片、增量/量化、原地共址、复制副本数量和频率决定。<a href="#ref1">[1]</a></p>
+<div class="math">D<sub>sync</sub> ≈ S<sub>shards</sub> × N<sub>copies</sub> × F<sub>sync</sub>（每单位时间）</div>
+<p>其中 S<sub>shards</sub> 是每次实际传送的切片量，而不是默认全模型。需要按<strong>实际通信路径去重</strong>，广播树、多播、分层分发、重复缓存都会改变链路负载。</p>
+<h3>5.2 KV 恢复的判断逻辑</h3>
+<p>KV 从 GPU 驱逐到同节点 CPU DRAM 时，主要约束 PCIe/NVLink-C2C 及内存/IO 带宽；只有状态真正跨节点迁移时，才成为 Scale-out Fabric 的 KV Traffic。设计网络前必须先确认 <strong>KV Owner / Cache Locality / Migration Policy</strong>。</p>
+<div class="card warning"><strong>不要混淆：</strong>P/D 分离推理中的 Prefill→Decode KV Transfer，与 Agentic RL 跨 Rollout/Iteration 的 KV 持久化恢复不是同一个生命周期；可能共用传输组件，但业务发生时间、方向和 Burst 都不同。</div>
+</section>
+<section id="model">
+<h2>06｜决定是否单独建设基础设施的准则</h2>
+<p>需要同时量化四个问题：</p>
+<ol>
+<li><strong>Rollout/Training 资源占比：</strong>生成轨迹的耗时能否被训练 GPU 同步/分时消化？</li>
+<li><strong>模型权重同步代价：</strong>分离之后新增的网络时间是否抵消异步重叠收益？</li>
+<li><strong>Sandbox 数量：</strong>环境启动、CPU、DRAM、NVMe、外部网络和检查器是否构成独立瓶颈？</li>
+<li><strong>长尾与状态：</strong>轨迹 p95/p99、恢复次数、Prefix 命中与 Policy Staleness 是否损害吞吐/收敛？</li>
+</ol>
+<div class="math">T<sub>colocated</sub> ≈ T<sub>rollout</sub> + T<sub>update</sub> + T<sub>switch</sub></div>
+<div class="math">T<sub>separated</sub> ≳ max(T<sub>rollout</sub>,T<sub>update</sub>) + T<sub>sync-unhidden</sub> + T<sub>stall</sub></div>
+<p>上式是稳态周期的<strong>简化性能模型</strong>，不含复杂资源数量与环境端约束。若 Environment 更慢，实际瓶颈还要纳入其处理能力；异步 Off-policy 对收敛质量也有可能付出代价。</p>
+<div class="table-scroll"><table><thead><tr><th>适用条件</th><th>优先方案</th><th>理由</th></tr></thead><tbody>
+<tr><td>现有训练资源充裕；SFT / 短 RLVR；预算敏感</td><td>共享训练集群 / Co-located</td><td>低改造成本，不急于专门建 Rollout Fabric</td></tr>
+<tr><td>Rollout 占大部分总时间，长尾严重，训练 GPU 明显闲置</td><td>Hybrid 或 Disaggregated</td><td>利用生成与训练重叠，提高端到端吞吐</td></tr>
+<tr><td>大量代码执行、网页交互、环境重启/快照</td><td>单独 CPU/Sandbox Pool</td><td>隔离安全和 IO 负载，避免占用高价 GPU 计算资源</td></tr>
+<tr><td>超大 MoE、频繁 Policy 更新、跨节点全量同步很贵</td><td>先测 Co-located / Hybrid</td><td>避免假设分离必然带来好处</td></tr>
+</tbody></table></div>
+</section>
+<section id="cases">
+<h2>07｜公开系统提供的证据：共址与分离均已验证</h2>
+<h3>Kimi K3：共址方案并非过时</h3>
+<p>Kimi K3 技术报告 §5.3.1 描述：在百万 Token Agentic RL 中采用 Co-located 训练和 Partial Rollout；为长前缀提供 GPU/Host 分层缓存与 Write-back；并使用可恢复的 Sandbox 运行环境。报告明确其目标是在数百 GPU 规模下进行单项长上下文 RL 实验。<a href="#ref1">[1]</a></p>
+<p><span class="tag">事实</span> 共址 + KV/State 分层，是已经公开的工程路线。<br><span class="tag">局限</span> 报告没有公开完整网络拓扑与 RL 生产集群流量矩阵，不能据此得出“原预训练 Fabric 在任何规模下完全不用改”的结论。</p>
+<h3>verl：训练框架、推理后端可以共享 GPU 和网络</h3>
+<p>verl 的 Hybrid Engine 将 Actor、Rollout、Reference 组合在 GPU Worker 内，训练使用 FSDP/Megatron 等，推理使用 vLLM/SGLang。官方文档指出共址的重要原因是利用 NCCL 实现快速权重传递；另一方面也支持独立设备映射和异步执行。<a href="#ref2">[2]</a><a href="#ref3">[3]</a></p>
+<h3>NVIDIA NeMo RL：现有 Slurm/Ray 环境既能共址也能分离</h3>
+<p>NeMo RL 官方示例明确支持 Policy 与 Generation Colocated，也支持放在不同 GPU/节点。其 Dynamo 试验性集成使用 Slurm + Ray，在统一资源分配下部署独立 vLLM GPU Fleet，并用 NCCL 实现 Policy Update。<a href="#ref4">[4]</a><a href="#ref5">[5]</a></p>
+<h3>RollArt（OSDI 2026）：分离式方案适合规模化多任务</h3>
+<p>ROLLART 将 Prefill、Decode、CPU Environment 和 Reward 按硬件特征调度，允许轨迹级异步与有限策略陈旧。论文报告相较其对照 RL 系统训练时间缩短 1.31–2.05 倍，并在阿里巴巴超过 3,000 张 GPU 集群上对数千亿参数量 MoE 训练进行了验证。<a href="#ref7">[7]</a></p>
+<p><span class="tag">工程推断</span> 这说明大规模 RL 可以建设异构资源池，但论文并未证明所有模型/工作负载都应该独立建物理网络。</p>
+</section>
+<section id="practical">
+<h2>08｜若以现有预训练数据中心改造，推荐这样做</h2>
+<div class="table-scroll"><table><thead><tr><th>优先级</th><th>改造项目</th><th>判断标准</th></tr></thead><tbody>
+<tr><td>P0</td><td>保留原 Scale-up/Scale-out；部署 RL Trainer + vLLM/SGLang</td><td>先以 Co-located 建立可运行基线</td></tr>
+<tr><td>P0</td><td>配置 Reward、Trajectory、Policy Version、Checkpoint</td><td>能重放/审计一条完整训练轨迹</td></tr>
+<tr><td>P0</td><td>按业务选择 CPU Sandbox/Verifier</td><td>代码 Agent 必须可安全隔离、暂停和恢复</td></tr>
+<tr><td>P1</td><td>网络分流/QoS 和 Telemetry</td><td>分开观察训练 Collective、Weight Sync、KV/State、RPC 的 p95/p99 和 Burst</td></tr>
+<tr><td>P1</td><td>对比共址、混合、解耦三种基线</td><td>比较每单位成本下的有效训练收益，而不只比较 MFU</td></tr>
+<tr><td>P2</td><td>仅当测量显示瓶颈时，升级或独立建设 Fabric/资源池</td><td>基于容量、延迟、拥塞和稳定性实测，而非“RL 必须独立部署”的假设</td></tr>
+</tbody></table></div>
+<p><strong>建议采集的最小指标：</strong>Rollout/Update/Sync/Environment 时间占比、GPU Active Ratio、完成轨迹每秒、Trainer 等待比例、Weight Sync Bytes 与周期、Rollout p99 长度、KV Hit/Migration、Sandbox 启停/快照 P99、网络队列拥塞、Policy Staleness、模型任务成功率。</p>
+<div class="quote">最终架构判断：复用现有训练网络是合理的默认起点；需要独立的是 RL 运行时的角色和状态管理体系；是否建设专用 Rollout GPU 池或新物理 Fabric，应由负载测量与端到端成本收益决定。</div>
+</section>
+<section id="sources">
+<h2>资料来源与核查边界</h2>
+<ol class="sources">
+<li id="ref1"><a href="https://arxiv.org/abs/2607.24653" target="_blank" rel="noopener">Kimi K3: Open Frontier Intelligence</a>，技术报告 §5.3 Agentic RL / Co-located / KV / Sandbox。原始报告，K3 的公开系统设计；不自动视为 K3.1 的完整实现。</li>
+<li id="ref2"><a href="https://verl.readthedocs.io/en/latest/hybrid_flow.html" target="_blank" rel="noopener">verl HybridFlow Programming Guide</a>，Actor/Rollout/Reference 同址设计、NCCL 传权重。</li>
+<li id="ref3"><a href="https://verl.readthedocs.io/en/latest/examples/config.html" target="_blank" rel="noopener">verl Config Explanation</a>，Actor、Rollout、Hybrid Engine 与 Backend 参数。</li>
+<li id="ref4"><a href="https://docs.nvidia.com/nemo/rl/latest/guides/environments.html" target="_blank" rel="noopener">NVIDIA NeMo RL Environments for GRPO</a>，Generation 与 Policy 可共址或不同节点。</li>
+<li id="ref5"><a href="https://docs.dynamo.nvidia.com/dynamo/reinforcement-learning/ne-mo-rl-integration" target="_blank" rel="noopener">NVIDIA Dynamo / NeMo RL Integration</a>，独立 Rollout Fleet、NCCL 权重同步。</li>
+<li id="ref6"><a href="https://verl.readthedocs.io/en/latest/advance/dynamic_schedule.html" target="_blank" rel="noopener">verl Dynamic Resource Scheduling</a>，2026-07 文档，Standalone/Hybrid 可弹性复用训练节点。</li>
+<li id="ref7"><a href="https://www.usenix.org/conference/osdi26/presentation/gao" target="_blank" rel="noopener">RollArt, OSDI 2026</a>，阿里巴巴合作的异构 Agentic RL 系统、规模化案例。</li>
+<li id="ref8"><a href="https://github.com/areal-project/AReaL/blob/main/docs/en/algorithms/async.md" target="_blank" rel="noopener">AReaL Asynchronous RL</a>，异步训练、Partial Rollout、策略版本过期处理。</li>
+</ol>
+<div class="card warning"><strong>研究边界：</strong>上述公开资料可验证架构模式和部分性能结果；尚缺乏统一硬件/模型/算法/任务条件下的公平成本测量，无法宣称某种部署对所有大模型最优。物理网络复用建议属于工程推断，必须通过容量与 QoS 压力测试确认。</div>
+</section>
+</article>
+</main>
+<footer>技术研究 · 2026-10-25 · 可公开阅读 · <a href="../">返回研究报告首页</a></footer>
+</body></html>
