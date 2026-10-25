@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <title>专题研究｜RL Scaling、长程 Agent 与下一代 AI 训练系统架构</title>
+  <style>
+    :root { --navy:#152b49; --ink:#1c2837; --muted:#586779; --blue:#2563eb; --teal:#0e7490; --green:#14835e; --line:#dfe7ef; --paper:#fff; --bg:#f5f8fb; --tint:#edf4ff; --soft:#f7faff; --warn:#fff8e5; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; font: 16px/1.85 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif; background:var(--bg); color:var(--ink); }
+    a { color:var(--blue); text-underline-offset:3px; } a:hover { text-decoration-thickness:2px; }
+    .top { background:linear-gradient(125deg,#122441 0%,#194b75 58%,#0b7a91 100%); color:#fff; padding:62px max(24px,calc((100vw - 1120px)/2)); }
+    .eyebrow { color:#a7e0f0; font-weight:700; letter-spacing:.12em; font-size:12px; }
+    h1 { font-size:clamp(29px,4.3vw,43px); line-height:1.27; max-width:930px; margin:13px 0 16px; letter-spacing:-.02em; }
+    .subtitle { max-width:880px; color:#d9e9f4; line-height:1.8; }
+    .metadata { margin-top:25px; display:flex; flex-wrap:wrap; gap:8px; }
+    .metadata span { border:1px solid #ffffff5a; border-radius:30px; font-size:12px; padding:5px 13px; color:#edf8ff; }
+    .layout { display:grid; grid-template-columns:240px minmax(0,1fr); gap:34px; max-width:1180px; margin:30px auto 85px; padding:0 24px; }
+    nav { position:sticky; top:18px; align-self:start; background:#fff; border:1px solid var(--line); box-shadow:0 7px 35px #233b5a0d; border-radius:14px; padding:18px 14px; max-height:calc(100vh - 35px); overflow-y:auto; }
+    .nav-title { font-weight:800; color:var(--navy); font-size:14px; padding:4px 10px 12px; }
+    nav a { display:block; font-size:13px; padding:7px 10px; border-radius:7px; text-decoration:none; color:#43546b; line-height:1.45; }
+    nav a:hover { background:#edf4ff; color:#174b91; }
+    main { min-width:0; }
+    article { background:var(--paper); border:1px solid var(--line); border-radius:17px; padding:clamp(22px,4vw,49px); box-shadow:0 8px 42px #17243b0b; }
+    .lede { font-size:18px; color:#243952; margin-top:0; }
+    h2 { color:var(--navy); font-size:27px; margin:60px 0 18px; line-height:1.4; border-bottom:2px solid #e4edf6; padding-bottom:13px; scroll-margin-top:20px; }
+    h2:first-child { margin-top:0; }
+    h3 { color:#1d4b79; font-size:21px; margin:40px 0 12px; scroll-margin-top:20px; }
+    h4 { font-size:17px; color:#194269; margin:25px 0 9px; }
+    p { margin:12px 0 18px; }
+    ul,ol { padding-left:1.45em; margin:12px 0 20px; } li { margin:5px 0; }
+    strong { color:#142f4d; }
+    blockquote { margin:25px 0; border-left:4px solid #2f83a6; background:#eff8fb; border-radius:0 10px 10px 0; padding:13px 20px; font-size:17px; font-weight:650; color:#173954; }
+    .small { color:var(--muted); font-size:13px; line-height:1.72; }
+    .tag { color:#076d78; background:#e5f6f7; border-radius:5px; padding:2px 6px; font-size:12px; font-weight:700; }
+    .conclusions { display:grid; gap:12px; margin:18px 0 27px; }
+    .conclusion { border:1px solid #d9e5f2; border-left:4px solid #1784a5; border-radius:10px; padding:15px 18px; background:var(--soft); }
+    .conclusion b { display:block; font-size:16px; margin-bottom:4px; }
+    .table-wrap { overflow-x:auto; margin:18px 0 22px; border:1px solid var(--line); border-radius:10px; }
+    table { width:100%; border-collapse:collapse; font-size:14px; line-height:1.65; }
+    th { background:#eaf1f8; color:#173a5f; text-align:left; font-weight:700; }
+    th,td { padding:12px 14px; border-bottom:1px solid #e7edf4; vertical-align:top; }
+    tr:last-child td { border-bottom:0; } tbody tr:nth-child(even) { background:#fafcfe; }
+    .kpi-row { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; margin:20px 0; }
+    .kpi { border:1px solid #dde8f2; border-radius:12px; background:#f9fcff; padding:17px 18px; }
+    .kpi .val { font-size:31px; font-weight:820; letter-spacing:-.025em; color:#0e7297; line-height:1.3; }
+    .kpi .label { color:#506479; font-size:13px; }
+    .formula { overflow-x:auto; background:#f1f6fb; border:1px solid #e0eaf4; border-radius:10px; text-align:center; padding:18px 12px; margin:18px 0; color:#173b60; font: 600 clamp(15px,2vw,20px)/1.7 Georgia,"Times New Roman",serif; }
+    .note { padding:13px 16px; border-radius:10px; background:var(--warn); border:1px solid #f2e5ba; margin:17px 0; font-size:14px; }
+    .technical-note { padding:15px 18px; background:#f0f7f9; border-left:4px solid #1e8295; border-radius:0 9px 9px 0; margin:23px 0; }
+    .codeflow { background:#112b43; border-radius:12px; color:#e3f2fb; font:13px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace; padding:20px 15px; overflow-x:auto; white-space:pre; }
+    .flowcard { border:1px solid #d8e7f0; background:#f6fafd; border-radius:10px; padding:12px 15px; text-align:center; }
+    .arr { text-align:center; color:#16799b; font-size:19px; line-height:1.3; }
+    .diagram { display:grid; gap:7px; margin:20px auto; max-width:570px; }
+    .three-pools { display:grid; grid-template-columns:1fr 1fr; gap:11px; }
+    .two-col { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .figure { border:1px solid var(--line); padding:15px; border-radius:12px; background:#fbfdff; margin:18px 0; }
+    .figure figcaption { font-size:12px; color:var(--muted); margin-top:8px; }
+    .source-list { list-style:none; padding:0; } .source-list li { padding:13px 0; border-bottom:1px solid var(--line); } .source-list .sno { color:#177d9a; font-weight:800; margin-right:8px; }
+    footer { padding:24px 0 40px; font-size:12px; color:#78879a; }
+    .jump { font-size:12px; text-decoration:none; color:#477292; }
+    @media (max-width:880px) { .layout{display:block;margin:0 auto;padding:14px 10px 40px;} nav{position:static;max-height:none;margin:0 0 14px;display:grid;grid-template-columns:1fr 1fr;} nav .nav-title{grid-column:span 2;} article{padding:22px 18px;} .top{padding:38px 21px 36px;} h2{font-size:23px;} h3{font-size:19px;margin-top:32px;} }
+    @media (max-width:520px) { .kpi-row,.two-col,.three-pools{grid-template-columns:1fr;} nav{grid-template-columns:1fr 1fr;} .kpi .val{font-size:27px;} .top .subtitle{font-size:14px;} table{font-size:13px;} th,td{padding:10px 11px;} }
+    @media (prefers-color-scheme: dark) { :root{--paper:#192434;--bg:#111b29;--ink:#e3eaf3;--navy:#e3f0ff;--muted:#9dafc2;--line:#324258;--soft:#1e3145;--warn:#3a321c;} nav,.figure,.kpi,.flowcard{background:#1a293a;} nav a{color:#b1c3d6;} nav a:hover{background:#2c435d;color:#e2f1fd;} strong,h4{color:#cfe7ff;} h3{color:#8fd0f0;} th{background:#293f53;color:#d8edff;} tbody tr:nth-child(even){background:#1d2a3a;} .formula{background:#20384d;color:#e1f5ff;border-color:#33546b;} .conclusion{background:#20384e;border-color:#33546b;} .technical-note,blockquote{background:#1c3446;color:#e4f3ff;} .note{border-color:#6d5934;} }
+    @media print { body{background:white;color:#111;} .top{padding:35px;background:#122b46!important;print-color-adjust:exact;} .layout{display:block;margin:0;padding:0;} nav{display:none;} article{border:0;box-shadow:none;padding:35px 44px;} h2,h3{break-after:avoid;} table,.figure,.kpi{break-inside:avoid;} a{color:#17477c;} }
+  </style>
+</head>
+<body>
+<header class="top">
+  <div class="eyebrow">TECHNICAL RESEARCH / AI INFRASTRUCTURE</div>
+  <h1>RL Scaling、长程 Agent<br>与下一代 AI 训练系统架构</h1>
+  <p class="subtitle">围绕三个问题：强化学习计算能否持续带来能力增长？长程 Agent 的失败根因是什么？训练、Rollout 和 Sandbox 应当怎样组织，才能获得更高的有效吞吐与成本效率？</p>
+  <div class="metadata"><span>研究日期：2026-10-25</span><span>证据与工程推断分离</span><span>包含公式、架构图与来源</span><span>离线可阅读</span></div>
+</header>
+<div class="layout">
+<nav aria-label="报告目录">
+  <div class="nav-title">报告目录</div>
+  <a href="#summary">研究摘要</a>
+  <a href="#r1">01 · RL Scaling Law</a>
+  <a href="#r1-scale">— Scaling 曲线与证据</a>
+  <a href="#r1-boundary">— RL 能力边界之争</a>
+  <a href="#r1-environment">— Environment Scaling</a>
+  <a href="#r2">02 · 长程 Agent</a>
+  <a href="#r2-longds">— 长程状态退化</a>
+  <a href="#r2-recovery">— 错误检测和恢复</a>
+  <a href="#r2-state">— 四层状态模型</a>
+  <a href="#r3">03 · Agentic RL 基础设施</a>
+  <a href="#r3-model">— 系统吞吐模型</a>
+  <a href="#r3-systems">— AReaL / VenusRL</a>
+  <a href="#r3-traffic">— 五类关键通信</a>
+  <a href="#r3-architecture">— 资源池与互联架构</a>
+  <a href="#integration">04 · 统一因果模型</a>
+  <a href="#judgement">05 · 最终判断</a>
+  <a href="#references">资料与引用</a>
+</nav>
+<main><article>
+<section id="summary">
+  <h2>研究摘要</h2>
+  <p class="lede">大模型在后训练阶段的竞争正逐渐扩展为三项耦合能力：<strong>可扩展的 RL 学习、可靠的长程任务执行、以及能支撑长轨迹的异构基础设施。</strong></p>
+  <div class="conclusions">
+    <div class="conclusion"><b>问题一：RL 是否有独立 Scaling Law？</b>在特定底座、任务集和训练配方下，可以拟合有预测力的经验计算—性能关系；但收益会饱和，不能证明追加 RL FLOPs 能无限突破能力边界。<br><span class="small">证据判断：较强（受实验设置约束）。</span></div>
+    <div class="conclusion"><b>问题二：长程 Agent 的核心瓶颈？</b>不是简单的 Context Length 不够，而是任务状态维护、错误传播、验证反馈与恢复能力。仅增加工具调用和 Thinking Tokens 不保证改善成功率。<br><span class="small">证据判断：较强（任务依赖明显）。</span></div>
+    <div class="conclusion"><b>问题三：下一代 Agentic RL 架构？</b>Train / Rollout / Environment 将趋向更细粒度的资源解耦和联合调度；但 Co-located、Disaggregated、Hybrid 的最优点取决于模型大小、同步频率、状态搬运量和成本。<br><span class="small">证据判断：系统趋势较强，通用最优方案尚未确定。</span></div>
+  </div>
+  <blockquote>RL 计算规模扩大 → 需要更多有效训练经验 → 需要更可靠的长程交互和可验证环境 → 改变 GPU、内存、存储和互联网络的负载结构。</blockquote>
+  <div class="note"><strong>阅读约定：</strong>文中明确注明「工程推断」「示例计算」的部分不是厂商实测数据。原回答涉及的论文与报告链接集中列在文末；已保留对应的原始文献名称与章节提示。</div>
+</section>
+
+<section id="r1">
+<h2>01 · RL Scaling Law 是否独立成立？</h2>
+<p><strong>结论：</strong>目前更准确的说法是「存在可预测、条件性的经验 Scaling 规律」，而不是「只要持续增加 RL 计算就必然持续提升能力」。</p>
+<p>必须区分两个概念：<b>Compute Efficiency</b>（单位计算获得性能改进的效率）和 <b>Asymptotic Capability</b>（训练趋于收敛时的能力上限）。一个方法可能让模型更快到达 70% 的成功率，却未必让最终上限从 80% 提高到 90%。</p>
+<h3 id="r1-scale">1.1 大规模实验与 Scaling 曲线</h3>
+<h4>证据 A：ScaleRL——训练计算与性能的经验可预测性</h4>
+<p>ICLR 2026 相关研究 <em>The Art of Scaling Reinforcement Learning Compute for LLMs</em>（文末资料 [1]）累计使用超过 40 万 GPU-hours，并通过约 10 万 GPU-hours 的单次大规模训练检验外推。论文报告：稳定 RL 过程可呈现具有预测性的计算—性能曲线；不同训练设置可能具有不同渐近性能；损失设计、归一化、Curriculum 和 Off-policy 处理等因素可显著改变效率，而未必改变最终上限。</p>
+<p>可用一个具有饱和性质的简化 Sigmoid 形式说明：</p>
+<div class="formula">R(C) = R<sub>0</sub> + (R<sub>max</sub> − R<sub>0</sub>) / [1 + (C<sub>50</sub> / C)<sup>b</sup>]</div>
+<ul><li><b>C</b>：累计 RL 训练计算量；<b>R(C)</b>：相应性能。</li><li><b>R<sub>0</sub></b>：初始性能；<b>R<sub>max</sub></b>：渐近性能上限。</li><li><b>C<sub>50</sub></b>：提升区间中点对应计算量；<b>b</b>：曲线形状参数。</li></ul>
+<figure class="figure">
+<svg width="100%" viewBox="0 0 690 320" role="img" aria-label="RL Compute 增大时模型性能逐渐饱和的示意图">
+<rect x="0" y="0" width="690" height="320" rx="12" fill="none"/>
+<g stroke="#c5d6e5" stroke-width="1"><line x1="74" y1="255" x2="655" y2="255"/><line x1="74" y1="195" x2="655" y2="195"/><line x1="74" y1="135" x2="655" y2="135"/><line x1="74" y1="75" x2="655" y2="75"/></g>
+<g fill="#667c91" font-size="13" font-family="sans-serif"><text x="34" y="259">40%</text><text x="34" y="199">60%</text><text x="34" y="139">80%</text><text x="34" y="79">100%</text><text x="74" y="282">1×</text><text x="215" y="282">4×</text><text x="355" y="282">16×</text><text x="500" y="282">64×</text><text x="610" y="282">256×</text><text x="298" y="310">RL 计算量（归一化，示意）</text></g>
+<path d="M77 250 C145 248,162 240,218 216 S316 163,385 137 S485 124,560 121 S619 120,654 120" fill="none" stroke="#0e7490" stroke-width="4" stroke-linecap="round"/>
+<path d="M77 120 L654 120" stroke="#0e7490" stroke-width="1" stroke-dasharray="4 5" opacity=".5"/>
+<text x="488" y="104" fill="#0e7490" font-size="12" font-family="sans-serif">收益渐近饱和</text>
+</svg>
+<figcaption>示意图：仅表现 Sigmoid 饱和趋势，并非论文实测拟合点或具体 Scaling Law 参数。</figcaption>
+</figure>
+<p><strong>工程含义：</strong>在固定基础模型、数据、奖励和算法的情况下，继续投入算力可能遇到边际收益快速下降。改变环境分布和训练目标，可能比机械增加 FLOPs 更重要。</p>
+<h4>证据 B：模型规模与 RL 效率</h4>
+<p>ACL 2026 论文 <em>Scaling Behaviors of LLM Reinforcement Learning Post-Training</em>（原回复引用）研究了 Qwen2.5 系列 0.5B 到 72B 模型，报告更大模型通常具有更高的数据与计算效率，并观察到可能的饱和趋势。这与前述结果不必冲突：训练的一段局部区间可拟合幂律，而有界性能指标的完整收敛过程可以呈 Sigmoid 式饱和。</p>
+
+<h3 id="r1-boundary">1.2 争议：RL 能否突破基础模型本来不具备的能力？</h3>
+<div class="table-wrap"><table><thead><tr><th>观察口径</th><th>研究发现</th><th>应如何理解</th></tr></thead><tbody>
+<tr><td>Pass@1</td><td>RL 往往明显改善单次正确率</td><td>部署价值较直接</td></tr>
+<tr><td>Pass@k</td><td>某些研究观察到基础模型在足够大 k 时可超过 RL 模型</td><td>RL 可能主要提升正确路径采样概率，未必扩大所有候选路径的覆盖</td></tr>
+<tr><td>CoT-Pass@k</td><td>另一些研究在同时验证过程与答案的指标上观察到 RL 提升</td><td>「是否具有新的正确推理能力」取决于测量定义</td></tr>
+<tr><td>Agent Task Success</td><td>衡量是否真正完成环境中的任务</td><td>对工程产品更直接，但测试基准和 Harness 会影响结果</td></tr>
+</tbody></table></div>
+<p>NeurIPS 2025 论文 <em>Does Reinforcement Learning Really Incentivize Reasoning Capacity in LLMs Beyond the Base Model?</em> 提出 RL 可能主要重排既有推理路径的概率分布。ICLR 2026 的 <em>Reinforcement Learning with Verifiable Rewards Implicitly Incentivizes Correct Reasoning in Base LLMs</em> 则通过更重视中间推理正确性的 CoT-Pass@k 得到能力提升证据。</p>
+<p>二者并非简单地一真一假。重要的是对「能力」作精确定义：单次正确率、探索覆盖、推理过程正确性和环境任务完成率并不等价。</p>
+<blockquote>RL 是否普遍创造全新的推理机制，尚无统一定论；RL 能改善策略选择效率和实际任务成功概率，则有较充分实验依据。</blockquote>
+
+<h3 id="r1-environment">1.3 Environment Scaling：为什么环境多样性可能比算力更重要？</h3>
+<p>ICML 2026 的 <em>RLVE</em> 研究构建 400 个可验证环境，并根据训练阶段调整任务难度。在其 1.5B 级模型实验设置下，扩展环境覆盖带来了平均 3.37 个百分点提升，而继续原有 RL 训练、消耗超过三倍计算量，报告的改善仅为 0.49 个百分点。</p>
+<div class="kpi-row"><div class="kpi"><div class="label">继续原有 RL 训练</div><div class="val">+0.49 pp</div><div class="small">额外计算量超过对照方案的三倍</div></div><div class="kpi"><div class="label">扩展至 400 个可验证环境</div><div class="val">+3.37 pp</div><div class="small">六项推理评测的平均提升</div></div></div>
+<p class="small">该结论来自特定小模型实验，不能直接外推到 Kimi 3T 级 MoE 或任何新的基础模型。</p>
+<p>环境的核心价值是提供有效的学习信号：任务全部成功时，奖励失去区分度；任务全部失败时，同样不容易获得有用的策略梯度。合适的难度、可靠验证器和足够广的任务分布会显著影响训练成效。</p>
+<div class="formula">RL 效果 = f(训练计算量，基础模型，环境覆盖，奖励质量，优化算法)</div>
+<h3>1.4 研究一结论</h3>
+<p>RL 确实构成可研究、可度量的后训练 Scaling 方向，但没有证据支持一种适用于所有模型与任务的「每增加一单位 RL FLOPs 都能持续获得固定收益」的规律。</p>
+<p>更合适的工程实验是：<strong>固定基础模型与评测，在相同预算下比较增加 RL Compute、扩大环境覆盖和增加 Test-time Compute，测量端到端任务完成率以及每次成功的计算成本。</strong></p>
+</section>
+
+<section id="r2">
+<h2>02 · 长程 Agent 的主要瓶颈是什么？</h2>
+<p>长程任务失败至少分为：基础能力不足、局部错误累积、历史状态退化。后两者非常重要，因为即使单步质量不变，任务成功率也会随步骤数下降。</p>
+<div class="table-wrap"><table><thead><tr><th>失败类型</th><th>表现</th><th>主要原因</th></tr></thead><tbody>
+<tr><td>能力不足</td><td>单独执行某一步也做不对</td><td>知识、推理、工具掌握不足</td></tr>
+<tr><td>错误累积</td><td>每一步貌似合理，最后任务失败</td><td>局部错误没有被及时发现或修复</td></tr>
+<tr><td>状态退化</td><td>最初正确，越执行越偏离目标</td><td>错误假设、计划和中间结果被持续沿用</td></tr>
+</tbody></table></div>
+<p>需注意：任务越长失败越多，本身不构成「状态退化」的充分证据；严格分析应与基于短步骤成功率构建的数学基线对比。</p>
+<h3 id="r2-longds">2.1 LongDS-Bench：持续修改与回滚中的状态退化</h3>
+<p>2026 年 5 月的 <em>LongDS-Bench</em> 研究设置了 68 项真实数据分析任务，包含 2,225 个交互轮次，要求模型进行状态更新、回滚、反事实分析和多状态组合。</p>
+<div class="kpi-row"><div class="kpi"><div class="label">最佳平均准确率</div><div class="val">48.45%</div></div><div class="kpi"><div class="label">任务初期至末期下降</div><div class="val">≈47 pp</div></div><div class="kpi"><div class="label">归类为长程错误的失败比例</div><div class="val">52–69%</div></div><div class="kpi"><div class="label">额外 Agent 步骤</div><div class="val" style="font-size:23px">未必改善</div><div class="small">更多探索有时延长错误链</div></div></div>
+<p class="small">上述是该研究中特定状态密集型数据分析任务的结果，并非所有 Agent 的通用平均失败率。</p>
+<h4>RTL 修复场景中的错误状态传播</h4>
+<pre class="codeflow">目标：修复 FIFO Full/Empty 控制逻辑
+  ↓
+读取 RTL 与仿真错误
+  ↓
+推断 push/pop 某条件异常    ← 这里可能只是未经验证的假设
+  ↓
+将该假设误写成“已确认事实”
+  ↓
+修改代码、运行更多测试
+  ↓
+持续围绕错误假设优化，最终失败</pre>
+<p>问题并不必然出在代码生成能力，而可能出在未能区分「观察事实／未验证假设／临时计划」。</p>
+<h3 id="r2-recovery">2.2 错误恢复能力比单步准确率更值得优化</h3>
+<p>使用独立步骤、最多一次修复且修复不引入额外错误的简化模型：</p>
+<div class="formula">p<sub>effective</sub> = p + (1 − p)dr</div>
+<p>其中 p 为单步直接正确率、d 为失败检测概率、r 为检测到失败之后的修复成功率。取 p=0.98、d=0.9、r=0.8，可得 p<sub>effective</sub>=0.9944。</p>
+<div class="kpi-row"><div class="kpi"><div class="label">50 步，不允许纠错</div><div class="val">36.4%</div><div class="small">0.98<sup>50</sup></div></div><div class="kpi"><div class="label">50 步，带检测与一次修复</div><div class="val">75.5%</div><div class="small">0.9944<sup>50</sup></div></div></div>
+<p class="small">这是说明原理的数学假设，不是任何实际模型的评测结果；真实步骤之间可能强相关，验证器也可能误判。</p>
+<p>AgentDebug（2025）对规划、动作、反思、记忆和系统操作错误进行分类，使用定位关键错误和有针对性的反馈来修复轨迹，在其测试任务中报告最高约 26% 的任务成功率相对改善。它支持「错误定位和恢复可提升 Agent 质量」的研究方向，但不是跨基准的通用增益。</p>
+
+<h3 id="r2-state">2.3 长程 Agent 必须区分四层状态</h3>
+<p>100 万 Token Context 只增加历史内容的可访问范围，无法保证任务状态或真实环境一定正确。为工程分析，建议拆分：</p>
+<div class="diagram">
+<div class="flowcard"><b>L1 · Conversation / Context</b><div class="small">历史消息、工具输出、推理记录与 KV Cache</div></div>
+<div class="arr">↓</div>
+<div class="flowcard"><b>L2 · Task / Belief State</b><div class="small">进度、已验证事实、暂时假设、子任务依赖和当前计划</div></div>
+<div class="arr">↓</div>
+<div class="flowcard"><b>L3 · Environment State</b><div class="small">文件、数据库、进程、Git 工作区、仿真器状态</div></div>
+<div class="arr">↓</div>
+<div class="flowcard"><b>L4 · Policy State</b><div class="small">模型参数与当前策略版本；决定下一步行动的策略</div></div>
+</div>
+<p class="small">此四层模型是工程分析框架，不是 Kimi 技术报告原有的正式分类。</p>
+<p><b>L1</b> 决定能否访问历史；<b>L2</b> 决定是否正确理解进度；<b>L3</b> 决定能否恢复真实环境；<b>L4</b> 决定策略升级后如何解释和利用旧轨迹。仅保存 L1 并不能恢复 L3。</p>
+<h3>2.4 Kimi K3：跨训练迭代存活的 Partial Rollout</h3>
+<p>K3 技术报告 §4.1.2 与 §5.3 描述，当批次中一定比例轨迹完成，系统便暂停剩余轨迹、开始策略优化，并在后续训练迭代恢复尚未完成的轨迹。</p>
+<p>因此，一条长轨迹可能由旧策略 π<sub>t</sub> 开始，后续在策略 π<sub>t+1</sub> 下继续。这会带来 <b>Off-policy Staleness</b>（策略版本滞后）的训练稳定性问题。K3 报告称通过 per-token regularization 处理此类情况，但不意味着任意跨版本长程 Rollout 都已解决稳定性问题。</p>
+<h3>2.5 长程能力瓶颈的优先级</h3>
+<div class="table-wrap"><table><thead><tr><th>优先级</th><th>潜在瓶颈</th><th>重点方向</th></tr></thead><tbody>
+<tr><td>1</td><td>错误状态持续传播</td><td>状态验证、根因定位、回滚</td></tr>
+<tr><td>2</td><td>环境反馈不足或错误</td><td>可验证任务、可靠 Verifier</td></tr>
+<tr><td>3</td><td>缺少足够长的真实交互训练</td><td>Long-horizon RL、任务分阶段设计</td></tr>
+<tr><td>4</td><td>Context / KV 成本过高</td><td>缓存分层、状态恢复与压缩</td></tr>
+<tr><td>5</td><td>过度探索导致执行成本失控</td><td>动态预算、停止策略、调度优化</td></tr>
+</tbody></table></div>
+<p>这是一份面向长程工具使用型 Agent 的工程排序，并非已在所有 Benchmark 上验证的普适瓶颈排名。METR 的 Task-completion Time Horizon 可辅助衡量长程能力变化，但衡量的是人类完成任务所需时间对应的任务跨度，而不是 Agent 自己运行了多久；对很长的人类任务时长的外推也有统计局限。</p>
+</section>
+
+<section id="r3">
+<h2>03 · Agentic RL 的计算与网络架构</h2>
+<h3 id="r3-model">3.1 从 GPU 利用率转向端到端有效吞吐</h3>
+<p>传统训练主要执行 Forward → Loss → Backward；Agentic RL 则需要在模型推理、外部环境、验证反馈和训练更新之间反复迭代。</p>
+<pre class="codeflow">                RL Task Generator
+                        │
+                        ▼
+               Rollout Controller
+                        │
+              ┌─────────┴──────────┐
+              ▼                    ▼
+      Inference GPU           Sandbox Pool
+      Prefill / Decode        CPU / DRAM
+              │                    │
+              └──── 多轮交互 ───────┘
+                        │
+                        ▼
+               Verifier / Reward
+                        │
+                        ▼
+                 Trajectory Pool
+                        │
+                        ▼
+                 Training GPU
+                 Forward/Backward
+                        │
+                        ▼
+                   Policy Update
+                        │
+                Weight Synchronization
+                        └────────→ Inference GPU</pre>
+<p>定义 Rollout GPU 的完整轨迹产出上限 X<sub>R</sub>、Sandbox + Verifier 能支持的上限 X<sub>E</sub>、Training GPU 能消化的上限 X<sub>T</sub>，在忽略额外同步损失的理想稳态：</p>
+<div class="formula">X<sub>train</sub> ≤ min(X<sub>R</sub>, X<sub>E</sub>, X<sub>T</sub>)</div>
+<p>若进一步关注成功任务轨迹的吞吐，可以定义 X<sub>success</sub>=X<sub>train</sub> × P<sub>s</sub>。不过，RL 也从失败轨迹中学习，所以成功轨迹的数量不能独自衡量训练样本价值。</p>
+<h4>三种资源组织形式</h4>
+<div class="table-wrap"><table><thead><tr><th>类型</th><th>设计方式</th><th>优点</th><th>主要代价</th></tr></thead><tbody>
+<tr><td>Co-located</td><td>Training 和 Rollout 复用 GPU</td><td>共享资源、减少某些模型状态搬运</td><td>训练与生成互相等待、HBM 竞争</td></tr>
+<tr><td>Disaggregated</td><td>训练和推理使用不同 GPU 池</td><td>可并行运行、分别优化并行策略</td><td>权重同步、Policy Staleness</td></tr>
+<tr><td>Hybrid / Elastic</td><td>一部分共享、一部分分离</td><td>有机会平衡成本和吞吐</td><td>多层调度、配额和状态迁移复杂</td></tr>
+</tbody></table></div>
+<p>K3 技术报告描述了 Co-located RL 与 Partial Rollout 的使用方式，但这不构成 Co-located 普遍优于分离式方案的证明。</p>
+<h3 id="r3-systems">3.2 两篇系统论文：AReaL 与 VenusRL</h3>
+<div class="two-col">
+  <div class="kpi"><div class="label">AReaL · 异步训练系统</div><div class="val">最高 2.57×</div><p class="small">Rollout Worker 持续生成，Training Worker 获取足够样本后更新；使用策略版本控制与适配的 PPO 处理陈旧数据。为特定基准下的加速结果。</p></div>
+  <div class="kpi"><div class="label">VenusRL · 完全分离式 Agentic RL</div><div class="val">最高 4.24×</div><p class="small">在特定 32-GPU Qwen3-4B/32B 测试环境中报告端到端加速；另报告环境成本降低 89%，均不可直接线性推广。</p></div>
+</div>
+<p>AReaL（2025）说明打破同步等待有机会提升训练速度。VenusRL（2026-10-02，预印本）进一步指出：<b>GPU Token 吞吐最高，并不代表 RL Update 最快。</b></p>
+<p>例如，一次策略更新需要凑齐 32 组轨迹，若调度器平均推进数百条轨迹，却迟迟无法让其中 32 组完整结束，训练更新仍然受阻。优先完成临近结束的任务组，有时比最大化瞬时 Token/s 更有价值。</p>
+<p>VenusRL 采用 Critical-group Scheduling，将组完成优先级、KV Cache 驻留和 Sandbox 资源调度结合。其结果提示：调度器应当理解 RL 的依赖关系，而不仅是单个推理请求长度。</p>
+
+<h3 id="r3-traffic">3.3 五类不同的关键通信</h3>
+<div class="table-wrap"><table><thead><tr><th>流量类别</th><th>数据内容</th><th>流量特征</th><th>网络目标</th></tr></thead><tbody>
+<tr><td>A · Policy Training</td><td>Gradient、Activation、MoE Tokens</td><td>同步性强、持续、高密度</td><td>高带宽、低延迟与低尾延迟</td></tr>
+<tr><td>B · Policy Sync</td><td>训练后的模型权重</td><td>体量大、可能周期性分发</td><td>高吞吐分发、版本一致性</td></tr>
+<tr><td>C · Rollout State</td><td>KV Cache、KDA State</td><td>不规则、动态且可能突发</td><td>缓存亲和、迁移带宽、恢复时间</td></tr>
+<tr><td>D · Agent Environment</td><td>RPC、文件、进程和 Sandbox 状态</td><td>CPU/存储混合，工具交互驱动</td><td>可靠性、响应时间和存储吞吐</td></tr>
+<tr><td>E · Trajectory / Reward</td><td>Token、Action、Reward、Logprobs</td><td>批量或流式，数据相对结构化</td><td>端到端吞吐、样本版本一致性</td></tr>
+</tbody></table></div>
+<h4>A：训练通信——传统高性能 Fabric 仍重要</h4>
+<p>TP、EP、PP、DP 的通信要求不会因为采用 RL 消失。模型内分片、专家 Token 分发和梯度同步仍会给 Scale-up/Scale-out Fabric 带来持续压力。</p>
+<h4>B：权重同步——分离式 RL 的潜在大流量</h4>
+<p>若以 K3 约 2.8T 总参数、完整 BF16 权重计算逻辑总量：</p>
+<div class="formula">S<sub>weights</sub> = 2.8 × 10<sup>12</sup> × 2 Byte = 5.6 TB</div>
+<p>该数字是全模型逻辑权重大小，不代表单 GPU 需要传输 5.6 TB，也不代表每轮同步都要搬运完整模型。真实传输取决于权重分片、量化、复制副本、增量同步以及 Worker 拓扑。</p>
+<p><strong>工程推断：</strong>随着参数增大与 Policy 更新频率上升，完全分离部署必须认真权衡权重分发成本。因而无法预先认定 Disaggregated 一定优于 Co-located。</p>
+<h4>C：KV Cache / Rollout State——恢复突发</h4>
+<p>K3 报告描述了 GPU KV Cache 与 CPU DRAM 外部缓存池协作的 Write-back 机制，用于保留长轨迹 Prefix，避免恢复时重新执行昂贵 Prefill。</p>
+<p>对一个普通 GQA 模型，单 Token KV Cache 大小可近似写为：</p>
+<div class="formula">M<sub>KV/token</sub> = 2 × L × H<sub>KV</sub> × D<sub>h</sub> × B</div>
+<p>例如 L=64 层、H<sub>KV</sub>=8、D<sub>h</sub>=128、BF16=2 Byte：</p>
+<div class="formula">M<sub>KV/token</sub> = 256 KiB；128K Token ≈ 32 GiB</div>
+<p class="small">此例仅适用于标准 GQA 的容量估算，不能直接用于 Kimi K3 的 MLA/KDA 混合缓存格式。</p>
+<p>对于跨节点恢复，网络带宽更应由「实际搬运状态量／允许恢复窗口」估算：</p>
+<div class="formula">BW<sub>required</sub> ≈ N<sub>resume</sub> × S<sub>restore</sub> / T<sub>restore</sub></div>
+<p>举例：32 条轨迹同时恢复、每条搬运 2 GiB、目标 4 秒内完成，则需要 <b>16 GiB/s（约 137 Gb/s）</b> 的有效数据吞吐，尚未包括协议开销。</p>
+<div class="note">这是条件示例，不是 Kimi 的网络实测。恢复阶段的数据是否经由网络、远程搬运多少、是否有足够本地缓存，取决于实际系统部署。</div>
+<p>与 Prefill/Decode Disaggregated Inference 不同，长程 RL 还需要考虑跨训练迭代的缓存持久化、恢复和策略版本切换。</p>
+<h4>D：Sandbox——独立的大规模计算与状态层</h4>
+<p>K3 的 AgentENV 使用基于 Firecracker 的 microVM，支持 Pause、Resume、Fork，以及内存/存储共享。报告称在 K3 训练和评估期间累计创建逾 5,100 万个 Sandbox 实例。</p>
+<p>VenusRL 还使用 Mooncake Transfer Engine 来迁移 Sandbox Memory State。这里迁移的是 <strong>Sandbox 内存状态</strong>，不能与推理系统里 Mooncake 的 KV Cache 迁移混为一谈。</p>
+<p>两者共同反映的系统需求是：将需要长期保存的执行状态与当前计算节点适度解耦，并在需要时低成本恢复。</p>
+
+<h3 id="r3-architecture">3.4 参考架构：三类资源池与分层互联</h3>
+<div class="diagram">
+<div class="flowcard"><b>RL Orchestrator / Scheduler</b><div class="small">Trajectory、Policy Version、任务组优先级、状态与亲和调度</div></div>
+<div class="arr">↕</div>
+<div class="three-pools"><div class="flowcard"><b>Training GPU Pool</b><div class="small">TP / PP / EP / DP<br>高性能同步互联</div></div><div class="flowcard"><b>Rollout GPU Pool</b><div class="small">Prefill / Decode<br>KV / Prefix Cache</div></div></div>
+<div class="arr">↕</div>
+<div class="flowcard"><b>CPU / Sandbox / State Pool</b><div class="small">DRAM · NVMe · Snapshot · Verifier · Storage</div></div>
+</div>
+<p class="small">图中是逻辑资源池，物理上可以共址、弹性共享或跨节点部署，不意味着固定需要三套独立集群。</p>
+<p><b>原则一：</b>模型并行组内部继续优化高密度、紧耦合的通信，例如训练 TP/EP，以及 Rollout 推理本身的模型分片通信。</p>
+<p><b>原则二：</b>资源池之间以调度解耦、状态迁移、模型同步和批量数据交换为主；不应无证据地把所有 GPU 与 CPU Sandbox 纳入同一个直接 Load/Store 域。</p>
+<h3>3.5 如何比较部署模式的经济性？</h3>
+<div class="formula">C<sub>effective</sub> = (C<sub>GPU</sub> + C<sub>CPU</sub> + C<sub>network</sub> + C<sub>storage</sub>) / N<sub>effective</sub></div>
+<p>N<sub>effective</sub> 应明确定义为满足质量标准的有效训练样本或最终成功任务，不同目标下不可混用。</p>
+<div class="table-wrap"><table><thead><tr><th>必须监测的指标</th><th>用途</th></tr></thead><tbody>
+<tr><td>GPU Active Compute Time</td><td>区分真实计算和外部等待</td></tr>
+<tr><td>Rollout Completion Throughput</td><td>测量完整轨迹而非单纯 Token/s</td></tr>
+<tr><td>Training Stall Time</td><td>量化等待轨迹、验证及权重同步</td></tr>
+<tr><td>Policy Staleness</td><td>跟踪样本策略版本与最新策略差距</td></tr>
+<tr><td>KV Cache Hit Rate</td><td>衡量恢复与 Prefix 复用效果</td></tr>
+<tr><td>Sandbox Resume P95/P99</td><td>观察状态恢复的长尾延迟</td></tr>
+<tr><td>Network Burst / P99</td><td>刻画同步/恢复引起的突发流量</td></tr>
+<tr><td>Quality-adjusted Throughput</td><td>连接训练吞吐与模型能力增益</td></tr>
+</tbody></table></div>
+<p><strong>工程倾向：</strong>Elastic Hybrid 值得作为参考方向，因为它允许根据瓶颈弹性切换资源；但目前并没有跨规模、跨模型的公开证据证明它普遍最优。</p>
+</section>
+
+<section id="integration">
+<h2>04 · 三个研究问题如何相互作用？</h2>
+<div class="diagram">
+<div class="flowcard"><b>基础模型能力</b><div class="small">Pre-training：知识、表示能力、潜在推理路径</div></div>
+<div class="arr">↓</div>
+<div class="flowcard"><b>RL 的有效探索空间</b><div class="small">任务难度 · 环境覆盖 · 奖励可信度 · 探索多样性</div></div>
+<div class="arr">↓</div>
+<div class="flowcard"><b>长程任务执行能力</b><div class="small">计划 · 行动 · 状态管理 · 错误检测 · 恢复</div></div>
+<div class="arr">↓</div>
+<div class="flowcard"><b>Agentic RL 基础设施</b><div class="small">Training · Rollout · KV · Sandbox · Policy Sync</div></div>
+<div class="arr">↓</div>
+<div class="flowcard"><b>最终能力与单位成本</b><div class="small">长程任务成功率 / 端到端资源投入</div></div>
+</div>
+<p>随着 RL 规模扩大，系统瓶颈可能从基础模型推理能力，转向可验证任务和奖励质量，再转向长程 Rollout、环境状态恢复以及 GPU/CPU 协同利用率。瓶颈并不固定在某一类计算资源上。</p>
+</section>
+<section id="judgement">
+<h2>05 · 最终研究判断与下一步</h2>
+<div class="conclusions">
+<div class="conclusion"><b>判断一：RL Scaling 有效，但环境质量可能比额外计算量更加稀缺。</b>ScaleRL 证明了条件性可预测性，RLVE 展现了环境扩展的潜在价值；尚不能将这些结论当作跨所有模型的普适规律。</div>
+<div class="conclusion"><b>判断二：长程 Agent 的提升越来越依赖状态管理和恢复。</b>增加 Context、Thinking Tokens 与操作步骤都可能有用，但未解决错误假设持续传播时不保证有效。</div>
+<div class="conclusion"><b>判断三：Agentic RL 集群的异构性将更强。</b>需要将 Policy Sync、KV/State、Sandbox 状态、轨迹数据与传统训练通信分别建模，才能解释真实的瓶颈及网络需求。</div>
+</div>
+<p><b>建议的后续工程研究：</b>建立 <em>Agentic RL End-to-End Traffic Model</em>，按训练更新频率、Rollout 长度分布、Sandbox 执行/等待比例、Prefix 命中率、状态迁移与策略同步等变量，推导负载矩阵、并发、Burst、P99、资源利用率，以及 Co-located / Disaggregated / Hybrid 的成本边界。</p>
+<blockquote>后训练改变的不只是模型能力的形成方式，还可能改变 AI 数据中心中计算、内存、存储和互联网络的资源组织方式；但它并不能自动证明预训练负载将被替代，或所有资源都需要处于更大的物理 Scale-up Domain。</blockquote>
+</section>
+<section id="references">
+<h2>参考资料与核验入口</h2>
+<p class="small">以下保留上一条研究中使用或提到的主要论文。报告数值均应按原论文的实验设置与对照基线理解，尤其需区分已发表会议论文、预印本和厂商技术报告。</p>
+<ul class="source-list">
+<li><span class="sno">[1]</span><a href="https://arxiv.org/html/2510.13786" target="_blank" rel="noopener noreferrer">The Art of Scaling Reinforcement Learning Compute for LLMs（ScaleRL）</a><br><span class="small">计算规模化、经验拟合曲线、收敛性与消融研究。</span></li>
+<li><span class="sno">[2]</span><a href="https://arxiv.org/html/2607.24653" target="_blank" rel="noopener noreferrer">Kimi K3 Technical Report</a><br><span class="small">重点 §4.1–4.2、§5.3–5.4：Agentic RL、Partial Rollout、KV 分层、AgentENV。</span></li>
+<li><span class="sno">[3]</span><a href="https://arxiv.org/html/2610.03286" target="_blank" rel="noopener noreferrer">VenusRL: A Fully Disaggregated Agentic RL System</a><br><span class="small">2026-10-02 预印本；优先级调度、KV Cache 亲和、Sandbox 状态迁移。</span></li>
+<li><span class="sno">[4]</span><a href="https://arxiv.org/html/2605.30434" target="_blank" rel="noopener noreferrer">LongDS-Bench: On the Failure of Long-Horizon Agentic Data Analysis</a><br><span class="small">长程状态退化、交互分析与错误归类。</span></li>
+<li><span class="sno">[5]</span><a href="https://arxiv.org/html/2509.25370" target="_blank" rel="noopener noreferrer">AgentDebug</a><br><span class="small">Agent 错误分类、根因定位及修复实验。</span></li>
+<li><span class="sno">[6]</span><a href="https://proceedings.mlr.press/v306/zeng26j.html" target="_blank" rel="noopener noreferrer">RLVE（ICML 2026）</a><br><span class="small">可验证训练环境扩展与额外计算量对照实验。</span></li>
+<li><span class="sno">[7]</span><a href="https://arxiv.org/abs/2505.24298" target="_blank" rel="noopener noreferrer">AReaL: A Large-Scale Asynchronous Reinforcement Learning System for Language Reasoning</a><br><span class="small">异步 Rollout/Training、策略过期处理与训练吞吐。</span></li>
+<li><span class="sno">[8]</span><a href="https://metr.org/time-horizons/" target="_blank" rel="noopener noreferrer">METR: Measuring AI Ability to Complete Long Tasks</a><br><span class="small">Task-completion Time Horizon 的定义、实验及局限。</span></li>
+<li><span class="sno">[9]</span><a href="https://www.kimi.com/en/blog/kimi-k3-1-pro" target="_blank" rel="noopener noreferrer">Kimi K3.1 Pro 官方发布</a><br><span class="small">后训练规模、长程 Agent 相关的官方发布背景。</span></li>
+</ul>
+<p class="small">报告为上一条对话内容的独立 HTML 排版版本，保留原有论证框架与关键数据；并未在此次排版过程中追加新的独立实验核验。请以论文正文和官方发布为最终数据依据。</p>
+</section>
+</article><footer>© 技术研究备忘录 · 2026-10-25 · UTF-8 HTML · 无脚本依赖 · 适配手机/桌面与打印</footer></main>
+</div>
+</body></html>
