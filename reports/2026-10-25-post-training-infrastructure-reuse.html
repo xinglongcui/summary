@@ -26,6 +26,11 @@ pre{white-space:pre-wrap;word-break:break-word;border-radius:9px;padding:15px;ba
 footer{max-width:1050px;margin:auto;padding:0 22px 55px;font-size:13px;color:var(--sub)}.sources li{word-break:break-word}
 @media(max-width:790px){main{display:block;padding:17px 13px 42px}nav{position:static;display:flex;gap:12px;overflow-x:auto;white-space:nowrap;margin-bottom:15px;padding:10px 14px}nav strong{display:none}nav a{padding:6px 0}section{padding:21px 18px;margin-bottom:15px}.twocol{grid-template-columns:1fr}header{padding:39px 20px 33px}}
 @media(prefers-color-scheme:dark){:root{--bg:#101927;--paper:#17263a;--ink:#e2eaf4;--sub:#afc1d2;--line:#33465d;--head:#e4f1ff;--accent:#78d4e9;--pale:#1b3949;--warm:#352e20}header{background:linear-gradient(115deg,#0b223c,#164b66)}th{background:#20334b;color:#e6effa}pre{background:#0b1d30}.flow .stage{border-color:#43687a}}
+
+/* Wider reading layout for research reports. */
+main{max-width:1560px}
+header{padding-left:max(22px,calc((100vw - 1560px)/2));padding-right:max(22px,calc((100vw - 1560px)/2))}
+footer{max-width:1560px}
 </style>
 </head>
 <body>
