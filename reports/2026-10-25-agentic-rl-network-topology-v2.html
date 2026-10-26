@@ -21,6 +21,12 @@ footer{max-width:1100px;margin:auto;padding:0 22px 50px;color:var(--sub);font-si
 /* V2: tiered topology diagrams */
 .physical-diagram{border:1px solid var(--line);border-radius:12px;padding:8px;background:#f7fafc;overflow-x:auto;margin:13px 0}.physical-diagram svg{display:block;width:100%;min-width:930px;height:auto}.tier-intro{background:var(--soft);padding:12px 15px;border-radius:8px;margin:12px 0}.tier-caption{font-size:13px;color:var(--sub);margin-bottom:19px}.qoshigh{font-weight:750;color:#087f6e}.qosmid{font-weight:750;color:#95612e}.qoslow{font-weight:750;color:#655199}.source-list li{overflow-wrap:anywhere}.mathline{font:650 16px/1.5 Georgia,serif;text-align:center;padding:14px;background:var(--soft);border-radius:10px;margin:12px 0}
 @media(prefers-color-scheme:dark){.physical-diagram{background:#eaf3f7}.qoshigh{color:#7cd5bf}.qosmid{color:#e8b77b}.qoslow{color:#baa5ec}}
+
+/* Responsive wide layout: scale large network diagrams to the viewport. */
+header>div,main,footer{max-width:1560px}
+.diagram svg,.physical-diagram svg{min-width:0;max-width:100%}
+.diagram,.physical-diagram{max-width:100%}
+@media(max-width:860px){.diagram svg,.physical-diagram svg{min-width:0}}
 </style>
 </head>
 <body>
