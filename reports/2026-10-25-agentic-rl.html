@@ -65,7 +65,11 @@
     @media (max-width:520px) { .kpi-row,.two-col,.three-pools{grid-template-columns:1fr;} nav{grid-template-columns:1fr 1fr;} .kpi .val{font-size:27px;} .top .subtitle{font-size:14px;} table{font-size:13px;} th,td{padding:10px 11px;} }
     @media (prefers-color-scheme: dark) { :root{--paper:#192434;--bg:#111b29;--ink:#e3eaf3;--navy:#e3f0ff;--muted:#9dafc2;--line:#324258;--soft:#1e3145;--warn:#3a321c;} nav,.figure,.kpi,.flowcard{background:#1a293a;} nav a{color:#b1c3d6;} nav a:hover{background:#2c435d;color:#e2f1fd;} strong,h4{color:#cfe7ff;} h3{color:#8fd0f0;} th{background:#293f53;color:#d8edff;} tbody tr:nth-child(even){background:#1d2a3a;} .formula{background:#20384d;color:#e1f5ff;border-color:#33546b;} .conclusion{background:#20384e;border-color:#33546b;} .technical-note,blockquote{background:#1c3446;color:#e4f3ff;} .note{border-color:#6d5934;} }
     @media print { body{background:white;color:#111;} .top{padding:35px;background:#122b46!important;print-color-adjust:exact;} .layout{display:block;margin:0;padding:0;} nav{display:none;} article{border:0;box-shadow:none;padding:35px 44px;} h2,h3{break-after:avoid;} table,.figure,.kpi{break-inside:avoid;} a{color:#17477c;} }
-  </style>
+  
+/* Wider reading layout for research reports. */
+.layout{max-width:1560px}
+.top{padding-left:max(24px,calc((100vw - 1560px)/2));padding-right:max(24px,calc((100vw - 1560px)/2))}
+</style>
 </head>
 <body>
 <header class="top">
