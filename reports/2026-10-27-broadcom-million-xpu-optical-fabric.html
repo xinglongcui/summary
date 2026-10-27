@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Broadcom 2026 PECC Summit 百万 XPU、1024×1024 Pod 网络拓扑、LightStream/OCI/ESUN、Tomahawk 6 与光纤数量的工程分析。">
+<title>Broadcom 1024×1024 百万 XPU 光网络架构｜技术分析报告</title>
+<style>
+:root{--bg:#f4f7fb;--paper:#fff;--txt:#162741;--muted:#536680;--line:#d9e3ed;--navy:#102d49;--blue:#1469a6;--teal:#007e86;--amber:#956017;--red:#9e3d31;--soft:#ecf4fb}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.76 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}a{color:#0871a8;text-underline-offset:3px}a:hover{color:#085b89}header{background:linear-gradient(120deg,#102b49,#0d6976);color:#fff;padding:46px max(24px,calc((100vw - 1460px)/2));}header h1{font-size:clamp(1.9rem,3.4vw,3rem);line-height:1.28;max-width:1100px;margin:10px 0 15px}header p{max-width:1150px;color:#d6e8ee;margin:8px 0}header .meta{font-size:14px;color:#cfedf4;letter-spacing:.03em}header .pill{display:inline-block;border:1px solid #72b7ca;color:#e7faff;padding:3px 10px;border-radius:50px;font-size:12px;margin-right:9px}
+.wrap{max-width:1500px;margin:auto;padding:30px 26px 80px;display:grid;grid-template-columns:230px minmax(0,1fr);gap:30px;align-items:start}
+nav{position:sticky;top:22px;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:0 2px 12px #213b5310}nav strong{display:block;color:var(--navy);margin-bottom:10px}nav a{display:block;color:var(--muted);text-decoration:none;padding:5px 0;font-size:14px}nav a:hover{color:var(--blue)}
+article{min-width:0}section{background:var(--paper);border:1px solid var(--line);padding:clamp(18px,3vw,36px);border-radius:15px;margin:0 0 22px;box-shadow:0 2px 16px #213b5308}h2{margin:0 0 15px;font-size:clamp(1.35rem,2vw,1.75rem);line-height:1.35;color:var(--navy)}h3{font-size:1.1rem;color:#174c74;margin:22px 0 8px}h4{margin-bottom:8px}p{margin:10px 0}strong{color:#163e61}ul,ol{padding-left:1.5em}li{margin:7px 0}.lede{font-size:1.08rem;line-height:1.9}.mono,code{font:0.96em/1.6 "SFMono-Regular",Consolas,monospace;background:#eef3f8;padding:1px 4px;border-radius:4px}pre{background:#13283e;color:#e6f5fc;overflow:auto;padding:18px;border-radius:10px}
+.kpi{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:20px 0}.kpi div{background:#edf5f9;border:1px solid #d4e7f1;border-radius:12px;padding:17px 12px}.kpi b{font-size:clamp(1.15rem,2.2vw,1.8rem);display:block;color:#125b7a;line-height:1.25}.kpi small{color:#526778;display:block;margin-top:7px}
+.note,.warning,.take{border-left:4px solid var(--teal);background:#eff8f7;padding:13px 17px;border-radius:0 9px 9px 0;margin:16px 0}.warning{border-color:#b78026;background:#fff7e8}.take{border-color:#3d74a1;background:#f0f6fc}
+.flag{display:inline-block;padding:2px 8px;margin-right:6px;border-radius:999px;font-size:12px;font-weight:650;color:#125d5b;background:#e6f5f1}.flag.infer{color:#936312;background:#fff1d9}.flag.open{color:#8d4a3f;background:#fae7e2}
+.table-scroll{overflow-x:auto;width:100%;margin:18px 0;border:1px solid var(--line);border-radius:10px}table{width:100%;border-collapse:collapse;min-width:680px;line-height:1.65;font-size:14px}th{background:#eaf2f8;color:#1d4667;text-align:left}th,td{padding:12px 15px;border-bottom:1px solid #e1e8f0;vertical-align:top}tr:last-child td{border-bottom:0}td:first-child{font-weight:550}table.small{min-width:520px}
+.fig{margin:20px 0;padding:18px 14px;background:#f9fbfd;border:1px solid #dce6ef;border-radius:12px;text-align:center}.fig svg{width:100%;height:auto;max-height:600px;display:block}.fig figcaption{font-size:13px;color:#526679;padding:8px 15px;text-align:left}
+.formula{display:block;background:#f0f4f9;border-left:3px solid #6b94b4;padding:12px 14px;font:14px/1.8 Consolas,monospace;white-space:normal;margin:10px 0;color:#1a354d}
+.refs a{overflow-wrap:anywhere}.refs li{padding-bottom:9px;border-bottom:1px solid #e9eef4}footer{text-align:center;color:#687b8e;font-size:13px;padding:0 30px 40px}
+@media(max-width:900px){.wrap{display:block;padding:16px 14px 55px}nav{position:static;margin-bottom:15px;display:flex;flex-wrap:wrap;gap:0 17px}nav strong{width:100%}nav a{font-size:13px;display:inline-block}section{margin-bottom:15px}.kpi{grid-template-columns:repeat(2,minmax(0,1fr))}header{padding:32px 20px}}
+@media(max-width:480px){.kpi{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.kpi div{padding:12px 10px}body{font-size:15px}.fig{padding:10px 2px}.fig svg{min-height:170px}}
+@media print{body{background:#fff}.wrap{display:block;max-width:1100px}nav{display:none}section{break-inside:avoid;box-shadow:none;border:1px solid #bbb}header{color:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style></head>
+<body>
+<header>
+<div class="meta">AI NETWORKING RESEARCH · 2026-10-27 · 公开资料研究</div>
+<h1>Broadcom 1024 × 1024 百万 XPU 光网络架构：从 PECC 演讲到可实现的系统边界</h1>
+<p>基于 2026-10-20 PECC Summit 的现场报道、2026-03 Optica 前序披露、Broadcom / OCI MSA / OCP ESUN / Meta 官方资料的交叉研究。</p>
+<div><span class="pill">事实 / 推断 / 待验证分离</span><span class="pill">拓扑 + 数据流 + 光 PHY</span><span class="pill">容量模型 + 可复核公式</span></div>
+</header>
+<div class="wrap">
+<nav aria-label="报告目录"><strong>目录</strong>
+<a href="#summary">01 · 核心结论</a><a href="#sources">02 · 源头与证据分级</a><a href="#evolution">03 · 架构提出时间线</a><a href="#fabric">04 · 网络结构解读</a><a href="#optics">05 · OCI / LightStream / ESUN</a><a href="#math">06 · 容量与光纤核算</a><a href="#compare">07 · 与 TH6 / Meta 对照</a><a href="#risk">08 · 风险与待验证</a><a href="#verdict">09 · 工程判断</a><a href="#references">参考文献</a>
+</nav>
+<article>
+<section id="summary">
+<h2>01 · 核心结论</h2>
+<p class="lede"><b>“1,024 × 1,024”应被视为一个由超大 Scale-up Pod 组成的百万 XPU 网络架构提案，而不是已交付的百万卡系统。真正的技术主张是：通过光学背板扩大 Pod 内紧耦合域，使 Scale-out 交换层从传统多层 Clos 向 Pod 级、并行 Rail 的扁平化网络演进。</b> 10 月现场报道直接描述了该结构；Optica 官方资料证实演讲人、日期和议程；当前无法从公开的一手完整演示稿逐页验证全部拓扑细节。<a href="#r01">[R01]</a><a href="#r02">[R02]</a><a href="#r03">[R03]</a></p>
+<div class="kpi"><div><b>1,024</b><small>Scale-up Pods（报道）</small></div><div><b>1,024</b><small>XPUs / Pod（报道）</small></div><div><b>1,048,576</b><small>全网 XPU 数（算术）</small></div><div><b>1 层</b><small>Pod 间 Scale-out 交换层（架构提案）</small></div></div>
+<div class="take"><strong>对交换机架构研究最重要的三点：</strong>① 域大小决定 Pod 外边界；② “少一层交换”不代表“一跳到对端 GPU”或“单颗芯片承载 1,024 GPU”；③ 光纤数量、Radix、单 XPU 带宽和光 PHY 必须一起闭合，不能分别引用宣传指标。</div>
+</section>
+
+<section id="sources">
+<h2>02 · 信息源头与证据分级</h2>
+<div class="table-scroll"><table><thead><tr><th>命题</th><th>证据</th><th>判定</th></tr></thead><tbody>
+<tr><td>10 月 20 日 Margalit 参加 PECC Summit</td><td>Optica 正式议程：Session 3，14:15–15:45；个人主页给出 Broadcom OSD 负责人身份。<a href="#r02">[R02]</a><a href="#r03">[R03]</a></td><td><span class="flag">官方确认</span></td></tr>
+<tr><td>1,024 Pod × 1,024 XPU；并行 Rail、Pod 间单层 Scale-out</td><td>2026-10-21 Converge Digest 对演讲的现场报道。<a href="#r01">[R01]</a></td><td><span class="flag">报道确认</span>非官方完整原稿</td></tr>
+<tr><td>百万 XPU 设计在 10 月首次提出</td><td>2026-03-17 已有约 1,000 Pod × 1,000 XPU 早期表述。<a href="#r04">[R04]</a></td><td><span class="flag">可证伪</span>并非首次</td></tr>
+<tr><td>光学信号采用 OCI 的 NRZ/WDM/BiDi</td><td>OCI MSA 官方介绍、200G PHY v1.0 规范及 Broadcom 公告。<a href="#r05">[R05]</a><a href="#r06">[R06]</a></td><td><span class="flag">一手标准</span></td></tr>
+<tr><td>LightStream OSFP/NPO/TH6 集成路线</td><td>10 月演讲现场报道列出 1.6T、12.8T、102.4T 实现形态。<a href="#r01">[R01]</a></td><td><span class="flag infer">厂商路线 / 二手报道</span></td></tr>
+<tr><td>已有 1,048,576 XPU 生产部署</td><td>来源明确将其定义为架构 proposal，未发布部署证据。<a href="#r01">[R01]</a></td><td><span class="flag open">未验证</span>不得写成已落地</td></tr>
+</tbody></table></div>
+<p>官方 PECC 注册页面说明会议不录制、也不提供线上参会。当前因此不宜把现场报道改写为“Broadcom 官方白皮书证明”。<a href="#r11">[R11]</a></p>
+</section>
+
+<section id="evolution">
+<h2>03 · 从 3 月到 10 月：不是突然出现的百万卡设想</h2>
+<div class="table-scroll"><table class="small"><thead><tr><th>时间</th><th>披露</th><th>架构增量</th></tr></thead><tbody>
+<tr><td>2025-06</td><td>Tomahawk 6（102.4 Tbps）发布，提出 512-XPU Scale-up / 百万级 Scale-out 需求。<a href="#r07">[R07]</a></td><td>硅交换容量与网络目标</td></tr>
+<tr><td>2026-03-12</td><td>OCI MSA 成立，发布 200G 光 PHY 路线；Broadcom、AMD、Meta、Microsoft、NVIDIA、OpenAI 参与。<a href="#r05">[R05]</a></td><td>光物理层产业化路径</td></tr>
+<tr><td>2026-03-17</td><td>Optica Executive Forum 报道约“1,000 XPUs / Pod × 1,000 Pods”。<a href="#r04">[R04]</a></td><td>已有 Pod 化百万 XPU 构想</td></tr>
+<tr><td>2026-10-12</td><td>Meta 公开 102.4T Scale-up/Scale-out 硬件及多平面 FPF。<a href="#r09">[R09]</a></td><td>有独立的实际系统方向可参照，不能等同 Broadcom 此方案</td></tr>
+<tr><td>2026-10-20/21</td><td>PECC 演讲及次日报道：1,024 × 1,024、跨 Rack 的 optical backplane、单层 Scale-out、LightStream 路线图。<a href="#r01">[R01]</a></td><td>数量具体化与光物理实现路线细化</td></tr>
+</tbody></table></div>
+<p><span class="flag infer">工程推断</span>由十进制约数转成 2 的幂形式（1,024）更容易与计算规模、地址空间和交换端口预算讨论对齐；<strong>但不能据此推断 Broadcom 已经证明 1,024-radix 的完整无阻塞互联。</strong></p>
+</section>
+
+<section id="fabric">
+<h2>04 · 网络结构：一层 Scale-out 究竟减少了什么？</h2>
+<figure class="fig">
+<svg viewBox="0 0 1100 560" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="自绘概念网络拓扑。左侧是四个代表性1024 XPU Pod，中间为并行的Scale-out Rails，右侧示意1024个Pods与单层Scale-out之间关系。不是Broadcom原始幻灯片。">
+<defs><marker id="arr" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0L7 3.5L0 7z" fill="#15839b"/></marker></defs>
+<text x="34" y="34" font-size="23" font-weight="700" fill="#173c5a">Conceptual topology · 分层示意（非原始幻灯片）</text>
+<text x="35" y="68" font-size="17" fill="#496577">Pod 内：紧耦合 Scale-up</text><text x="625" y="68" font-size="17" fill="#496577">Pod 间：多 Rail × 单层 Scale-out</text>
+<g fill="#f0f7fc" stroke="#76a4c3" stroke-width="2"><rect x="35" y="100" width="430" height="82" rx="12"/><rect x="35" y="202" width="430" height="82" rx="12"/><rect x="35" y="304" width="430" height="82" rx="12"/><rect x="35" y="406" width="430" height="82" rx="12"/></g>
+<g fill="#143f63" font-size="18" font-weight="700"><text x="53" y="128">Pod 0000</text><text x="53" y="230">Pod 0001</text><text x="53" y="332">Pod 0002</text><text x="53" y="434">Pod 1023</text></g>
+<g font-size="15" fill="#527185"><text x="53" y="154">1,024 XPU · 光学背板 / ESUN</text><text x="53" y="256">1,024 XPU · 光学背板 / ESUN</text><text x="53" y="358">1,024 XPU · 光学背板 / ESUN</text><text x="53" y="460">1,024 XPU · 光学背板 / ESUN</text></g>
+<g fill="#d8edf2" stroke="#218ba4" stroke-width="1.5"><rect x="312" y="118" width="129" height="43" rx="8"/><rect x="312" y="220" width="129" height="43" rx="8"/><rect x="312" y="322" width="129" height="43" rx="8"/><rect x="312" y="424" width="129" height="43" rx="8"/></g>
+<g fill="#0f526b" font-size="15" text-anchor="middle"><text x="376" y="144">Local Fabric</text><text x="376" y="246">Local Fabric</text><text x="376" y="348">Local Fabric</text><text x="376" y="450">Local Fabric</text></g>
+<g fill="none" stroke="#1a8a9d" stroke-width="3" opacity=".8"><path d="M465 140 L615 140"/><path d="M465 242 L615 242"/><path d="M465 344 L615 344"/><path d="M465 446 L615 446"/></g>
+<rect x="616" y="96" width="225" height="90" rx="13" fill="#146888"/><rect x="616" y="198" width="225" height="90" rx="13" fill="#18728d"/><rect x="616" y="300" width="225" height="90" rx="13" fill="#1c7e8f"/><rect x="616" y="402" width="225" height="90" rx="13" fill="#24899a"/>
+<g text-anchor="middle" fill="white"><text x="728" y="127" font-size="20" font-weight="700">Rail 0</text><text x="728" y="151" font-size="14">Scale-out fabric tier</text><text x="728" y="229" font-size="20" font-weight="700">Rail 1</text><text x="728" y="253" font-size="14">Scale-out fabric tier</text><text x="728" y="331" font-size="20" font-weight="700">Rail k−2</text><text x="728" y="355" font-size="14">Scale-out fabric tier</text><text x="728" y="433" font-size="20" font-weight="700">Rail k−1</text><text x="728" y="457" font-size="14">Scale-out fabric tier</text></g>
+<g stroke="#70a4b3" stroke-width="2" fill="none"><path d="M842 140 L952 140 L952 446 L842 446"/><path d="M842 242 L910 242 L910 344 L842 344"/></g>
+<rect x="947" y="257" width="137" height="65" rx="10" fill="#eff6fa" stroke="#7ba3be"/><text x="1016" y="283" font-size="14" text-anchor="middle" fill="#1d5776">1024 Pods</text><text x="1016" y="302" font-size="13" text-anchor="middle" fill="#547489">逻辑覆盖</text>
+<text x="37" y="526" font-size="14" fill="#7a5762">显示四个代表 Pod；各 Rail 连接方式、芯片数量、端口映射、超额订阅比均未披露。</text>
+</svg>
+<figcaption>图 1 · 作者依据公开报道重绘的<strong>逻辑</strong>网络示意。某条 Rail 的方框表示一个交换层（tier），不是“一颗交换芯片”；多条 Pod–Rail 的真实布线没有在图上穷举。</figcaption>
+</figure>
+<h3>4.1 三种不同的“层 / 跳 / 域”，不能混用</h3>
+<ul><li><b>Scale-up Domain：</b> Pod 内的低时延、高带宽紧耦合集合；1,024 XPU 是提案的系统规模，而非 TH6 单芯片已公布的 512 XPU 直连能力。</li>
+<li><b>Scale-out Tier：</b> Pod 之间的交换结构。报道中的“single layer”是层级缩减，而非宣布所有 Pod 通过一个 ASIC 互联，也不等于 GPU 到 GPU 全路径仅经过一颗交换机。</li>
+<li><b>Rail：</b>多平面并行的带宽 / 故障域分组；Rail 数量 <code>k</code>、每 Pod 端口数和跨 Rail 负载均衡机制，公开报道没有给出。</li></ul>
+<h3>4.2 可能的数据流路径（示意）</h3>
+<div class="formula">XPU-A → Pod-A 本地 Scale-up 交换路径 → Pod-A 出口 → 指定 Scale-out Rail → Pod-B 入口 → Pod-B 本地 Scale-up 路径 → XPU-B</div>
+<p><span class="flag infer">工程推断</span>跨 Pod 的“单层”只约束 Pod 间 transit fabric 的逻辑层级。源 / 目的 Pod 内可能仍有多级或多芯片的 Scale-up 交换路径。对 TTFT、ITL、集体通信与 EP all-to-all 的实际收益，取决于分组、带宽和流量局部性。</p>
+</section>
+
+<section id="optics">
+<h2>05 · OCI / LightStream / ESUN 的技术分工</h2>
+<figure class="fig">
+<svg viewBox="0 0 1100 334" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="自绘协议层次图：上层应用与通信，中层ESUN，以太交换，底层OCI光物理层及LightStream物理实现。">
+<rect x="25" y="22" width="1050" height="60" rx="10" fill="#123f5d"/><text x="550" y="58" font-size="22" fill="white" text-anchor="middle">训练 / 推理通信：Collective · EP · KV Transfer · RDMA（取决于协议栈）</text>
+<rect x="25" y="96" width="1050" height="67" rx="10" fill="#cbe8e5" stroke="#76b4ae"/><text x="550" y="122" font-size="22" fill="#0d5860" font-weight="700" text-anchor="middle">ESUN · Ethernet Scale-Up Networking</text><text x="550" y="145" font-size="16" fill="#285c68" text-anchor="middle">Header / lossless / LLR / multi-hop control / switching semantics</text>
+<rect x="25" y="178" width="1050" height="67" rx="10" fill="#d5e4f4" stroke="#91add2"/><text x="550" y="205" font-size="22" fill="#173c63" font-weight="700" text-anchor="middle">OCI MSA · Optical Compute Interconnect</text><text x="550" y="227" font-size="16" fill="#365f86" text-anchor="middle">200G PHY：4 × 53.125 Gb/s NRZ · WDM · 同纤双向 · ELS</text>
+<rect x="25" y="259" width="1050" height="57" rx="10" fill="#e5e8f3" stroke="#b7bfd8"/><text x="550" y="285" font-size="21" fill="#3b446d" font-weight="700" text-anchor="middle">LightStream · Broadcom 光 SerDes / 集成实现路线</text><text x="550" y="305" font-size="14" fill="#4f5e85" text-anchor="middle">OSFP → NPO → package / interposer integration（产品路线，非单一协议）</text>
+</svg>
+<figcaption>图 2 · 标准与产品的关系。为便于理解将功能分层列示，不表示所有实现都必须严格按这些块一一封装。</figcaption>
+</figure>
+<h3>5.1 OCI：是光学 PHY，不是一个独立的 GPU Load/Store Fabric 协议</h3>
+<p><span class="flag">一手规范</span>OCI 200G Optical PHY v1.0（2026-03-11）第 5–6 页示意板载、封装内、Interposer 三类集成方式，并规定在一根光纤中使用不同波长组使 Tx/Rx 反向传播。第 9 页描述四个 53.125 GBd NRZ 波长承载约 212.5 Gb/s 编码线速（名义为 200G）。这是一条 200G 逻辑链路的 <b>4 波长合并</b>，不可把 4×50G 又乘一次当成每纤 800G。<a href="#r06">[R06]</a></p>
+<p>Broadcom / OCI MSA 公告把 Gen1 称为 4λ×50G NRZ、200 Gb/s 每方向，把 400G/方向的 BiDi 列作后续路线；更高速单纤方案属于未来目标而非 Gen1 的既成能力。<a href="#r05">[R05]</a></p>
+<h3>5.2 ESUN：更靠近交换与链路可靠性</h3>
+<p><span class="flag">一手公开</span>OCP ESUN 1.0 发布说明明确包括紧凑 4 Byte 的 ESUN Header、PFC、Credit-based Flow Control、Link Level Retry，以及 multi-hop 网络中的拥塞控制。其目标是支持可扩展的以太网 Scale-up，不意味着这些机制在全部厂商设备上已经具备互操作验证。<a href="#r10">[R10]</a></p>
+<h3>5.3 LightStream：报道中的三种集成形态</h3>
+<div class="table-scroll"><table class="small"><thead><tr><th>披露形态</th><th>报道标称容量</th><th>工程含义与限制</th></tr></thead><tbody>
+<tr><td>OSFP-LS</td><td>1.6T</td><td>可插拔光实现；非原生光 ASIC 可以保留 200G PAM4 电接口。</td></tr>
+<tr><td>NPO-LS</td><td>12.8T</td><td>光引擎靠近封装；减少板级高速电路径，制造维护更复杂。</td></tr>
+<tr><td>TH6-LS</td><td>102.4T</td><td>与交换硅更深度集成；这里的 102.4T 更接近整颗交换芯片容量，不能和单模块 1.6T 当作同一产品单位比较。</td></tr>
+</tbody></table></div>
+<p>上述来自 PECC 现场报道，尚未发现完整 LightStream 正式量产时间表、实测整机 pJ/bit 或大规模部署公开文件。<a href="#r01">[R01]</a></p>
+</section>
+
+<section id="math">
+<h2>06 · 定量核算：带宽、交换芯片与 32,000 根光纤</h2>
+<h3>6.1 先定义两个不同的带宽</h3>
+<p><code>B_su</code>：每 XPU 在 Pod 内的 Scale-up 网络注入带宽；<code>B_so</code>：每 XPU 可用于跨 Pod 的 Scale-out 带宽。不能把两者混用。用 <code>α</code> 表示需要离开本 Pod 的有效通信份额，并用 <code>h</code> 表示工程超额订阅 / 并发利用等因素。</p>
+<div class="formula">N_total = 1024 × 1024 = 1,048,576 XPUs<br>Pod Scale-up 端口容量（单向预算）C_su = 1024 × B_su<br>全网理论跨 Pod 注入需求 D_off = 1,048,576 × B_so × α<br>每 Pod 的出口需求 C_off,pod = 1024 × B_so × α</div>
+<p><span class="flag infer">情景示例，不是 Broadcom 配置</span>若假设 <code>B_so=0.8 Tb/s/XPU</code>、<code>α=0.20</code>，则每 Pod 跨 Pod 流量上界预算约 <b>163.84 Tb/s</b>，全网单方向合计约 <b>167.77 Pb/s</b>。只需要改变工作负载的 <code>α</code>、Scale-out NIC 数量、Pod 内聚合方式、超额订阅条件，网络成本就会大幅变化。</p>
+<h3>6.2 TH6 容量的极限算术，不等于系统 BOM</h3>
+<p>官方公布 TH6 单芯片 <b>102.4 Tb/s</b>、<b>512×200G 或 1024×100G</b> SerDes，且单芯片 512 XPU 单跳全互联仅对应其特定 Scale-up 接口预算。<a href="#r07">[R07]</a><a href="#r08">[R08]</a></p>
+<div class="formula">若 B_su = 25 Tb/s/XPU（仅代入报道例子），<br>C_su = 1,024 × 25 = 25,600 Tb/s = 25.6 Pb/s<br>按 102.4 Tb/s 每颗粗略除：25,600 / 102.4 = 250 个“102.4T 交换容量等效单位”</div>
+<div class="warning"><b>注意：</b>“250”只是<strong>接口总带宽除以芯片标称容量</strong>的算术量级，不能作为实际芯片数量下界或设备 BOM；实际交换架构可能重复消耗端口用于交换机间链路，且没有足够信息区分用户带宽究竟是单向、双向总计还是链路带宽。不能用它直接证明某一拓扑可实现。</div>
+<h3>6.3 现场报道 32,000 根光纤的数字无法直接闭合</h3>
+<p>PECC 报道称“约 1,000 XPU、约 25 Tb/s 每 XPU、约 32,000 fibers”，并同时提到“200 Gbps per direction” 的 BiDi 链路。采用 OCI Gen1 的<b>每根光纤单方向 200G</b> 解释，计算如下：<a href="#r01">[R01]</a><a href="#r06">[R06]</a></p>
+<div class="formula">1000 XPUs × 25 Tb/s/XPU = 25,000 Tb/s（若25T为单向）<br>每根纤 200 Gb/s = 0.2 Tb/s（单方向）<br>所需 ≈ 25,000 / 0.2 = 125,000 根纤（接口端口容量口径）<br>反过来：32,000 根 × 0.2 Tb/s = 6,400 Tb/s = 6.4 Pb/s（单向）</div>
+<p>按此口径两者相差约 <b>3.9 倍</b>。可能存在没有披露的假设：25T 是否为双向总计、是否只取四分之一外部光 I/O、是否为一根纤有更高代际容量，或是否把纤芯 / 双工 / 链路 / 模块计数口径混合。<strong>单靠现有公开表述无法还原 32,000 的严格推导。</strong></p>
+<p><span class="flag">规范核对</span>OCI Gen1 的 <code>4 × 53.125 Gbaud NRZ</code> 是约 212.5G 线速的四波长组合，不能再次将这条链路四倍化；速率若改为下一代 800G/纤则需明确不同 PHY 代际与具体波长数。<a href="#r06">[R06]</a></p>
+<h3>6.4 为什么“一层 Scale-out”依然很困难</h3>
+<ul><li>若每条 Rail 希望通过一颗交换机直达全部 1,024 Pod，单芯片至少需要 1,024 个独立 Pod 端口；TH6 在 100G 时可以对应 1,024 个 SerDes，但 <b>每 Pod 每 Rail 仅 100G</b>，对于整个 1,024 XPU Pod 非常窄。200G 端口模式则只有 512 条。</li><li>若 Pod 所需的有效跨 Pod 带宽高于单 Rail 端口，可使用多个 Rail、每个 Pod 多个接口、更多交换芯片；这会重新引入大量端口、光链路与管理成本。</li><li>一层交换可降低某些路径跳数，却无法消灭 <b>大集群总的注入带宽、Bisection Bandwidth、光纤布线与拥塞热点</b>。Pod 内跨 Rack 的光网络也不保证无阻塞。</li></ul>
+</section>
+
+<section id="compare">
+<h2>07 · 对照 TH6 与 Meta：可落地的部分在哪里？</h2>
+<div class="table-scroll"><table><thead><tr><th>项目</th><th>有公开资料支持的能力</th><th>与百万 XPU 提案的关系</th></tr></thead><tbody>
+<tr><td>Broadcom TH6（2025/2026）</td><td>102.4T；512×200G/1024×100G；512 XPU 单芯片单跳 Scale-up；2026-03 宣布量产供货。<a href="#r07">[R07]</a><a href="#r08">[R08]</a></td><td>基础硅交换能力已公布，但没有自动推出 1,024 XPU Pod 的拓扑实现。</td></tr>
+<tr><td>Meta OCP 2026</td><td>102.4T IceCube switch blade；FPF 八独立平面各 100G、以 NIC 包喷流；下一代 72 XPU / Rack、八个 216×400G blade；未来计划 ESUN。<a href="#r09">[R09]</a></td><td>说明多平面 / 102.4T / ESUN 的技术路线具有产业实践依托，<b>但不是 Broadcom 1,024 Pod 同一设计</b>。</td></tr>
+<tr><td>OCI MSA / ESUN OCP</td><td>公开 PHY / 运营商需求与网络功能目标。<a href="#r05">[R05]</a><a href="#r06">[R06]</a><a href="#r10">[R10]</a></td><td>分别解决光端口物理互通与网络功能基础，不等同于“百万卡整网已认证”。</td></tr>
+<tr><td>Broadcom PECC 光 Scale-up</td><td>1,024×1,024 Pod 描述；LightStream OSFP/NPO/TH6 路线；演讲展示部分光通道测量。<a href="#r01">[R01]</a></td><td>现阶段属于系统架构展示 / 器件路线，并无可独立核对的实机万 / 百万卡测量数据。</td></tr></tbody></table></div>
+<h3>7.1 与 UALink / NVLink 类路线的边界</h3>
+<p><span class="flag infer">比较框架</span>技术差异不在“是否使用光纤”这么简单，而在于 <b>传输语义（Load/Store vs packet）、端到端可靠性与错误恢复、内存一致性 / 访问模型、命名与寻址、故障隔离、路由控制域</b>。OCI 提供一种开放光 PHY 选择，ESUN 提供以太网 Scale-up 的协议方向；二者不会自动继承 UALink 或 NVLink 的语义与软件栈。</p>
+<h3>7.2 对推理 / MoE 通信的实际影响</h3>
+<p>把更多 Expert、KV 或模型分片留在一个超大 Pod，可能减少某些跨 Pod 通信和外部 leaf/spine 层级；但收益取决于 EP 分组、token 分布、all-to-all 偏斜、模型并行分割、P/D 分离部署、KV cache placement。<b>若跨 Pod 需求本身仍高，外部带宽才是瓶颈；若 Pod 内光链路是瓶颈，扩大 Pod 反而可能放大拥塞与故障传播。</b> 这是机制推断，不是厂商已报告的测量结果。</p>
+</section>
+
+<section id="risk">
+<h2>08 · 工程风险、验证清单与可证伪条件</h2>
+<div class="table-scroll"><table><thead><tr><th>待验证问题</th><th>需要的原始证据</th><th>影响的结论</th></tr></thead><tbody>
+<tr><td>1,024 XPU Pod 的 Switch topology / hop 分布？</td><td>原始拓扑图、switch/rack 数、uplink/downlink、radix、hop histogram</td><td>能否称“单一 Scale-up Domain”及其 latency</td></tr>
+<tr><td>单 XPU 25T 的方向、口径、光 / 铜分摊？</td><td>PHY 总线宽、TX/RX 预算、过订阅比</td><td>交换芯片需求与光纤数量</td></tr>
+<tr><td>32k 光纤如何核算？</td><td>每根纤净速率、波长、BiDi、布线端数、是否仅跨 Rack</td><td>系统 BOM / 接插件量级</td></tr>
+<tr><td>有多少条 Scale-out Rail，每 Pod 分配多少带宽？</td><td>Rail 数、NIC I/O、crosspod bisection、port map</td><td>一层 tier 可否持续线速及拓扑成本</td></tr>
+<tr><td>LightStream 各形态的 Power/BER/Reach？</td><td>加上 ELS 的端到端 pJ/bit、FEC/LLR 延时、OSNR/插损</td><td>是否优于 DAC、NPO、CPO、现有光模块</td></tr>
+<tr><td>OCI PHY 与 ESUN 能否异厂商互通？</td><td>Interop plugfest、FEC/PCS test suite、protocol conformance</td><td>开放系统实际成熟度</td></tr>
+<tr><td>一个 Pod 故障时的 blast radius？</td><td>链路/光引擎/交换 ASIC / ELS 故障注入，重收敛分位数</td><td>超大故障域是否抵消层级收益</td></tr>
+<tr><td>真实工作负载收益？</td><td>TTFT/ITL、EP all-to-all、Collective goodput、job completion time、尾延迟</td><td>从“拓扑更平”到“训练推理更快”的证据闭环</td></tr></tbody></table></div>
+<div class="warning"><strong>RAS 特别警告：</strong>光学背板和 1,024 XPU Scale-up 域会改变共享故障域与运维对象。ELS 共享、纤芯连接器污染、波长热调谐、MRR 漂移、光引擎封装良率都应纳入可靠性模型；仅有单链路 BER 数据不能推导百万端点的 Job-level availability。</div>
+</section>
+
+<section id="verdict">
+<h2>09 · 工程判断与研究优先级</h2>
+<p><span class="flag">已验证事实</span>百万 XPU / 多个超大 Pod 的构想至少可以追溯到 2026 年 3 月；10 月现场报道提出精确的 1,024×1,024 及 LightStream 配套路线。OCI 和 ESUN 各有公开一手规范，而 TH6 已有可核查的量产产品规格。<a href="#r01">[R01]</a><a href="#r04">[R04]</a><a href="#r05">[R05]</a><a href="#r08">[R08]</a><a href="#r10">[R10]</a></p>
+<p><span class="flag infer">核心工程推断</span><b>这是“通过更大的局部性域换取外部交换层压缩”的系统架构路线，而不是简单以光取代铜。</b> 其商业可行性必须同时满足：Pod 内交换带宽可实现、跨 Pod 平均外部注入比可控、OCI 的 Fiber / connector / ELS 成本足够低、运行中的 RAS 和业务尾延迟不会恶化。</p>
+<p><span class="flag open">仍不应宣称</span>它已经是百万 GPU 单一内存语义域、1024-radix 单芯片、零阻塞一跳网络，或者 32k 光纤模型已由公开参数完整闭合。</p>
+<div class="take"><b>建议接下来研究的先后：</b>先查原始 1,024-Pod 的<b>端口、Rail 和层级图</b>；再闭合 25 Tbps / XPU 与 32k fibers 的假设；随后基于具体 MoE / P-D / AllReduce workload 测量外部通信份额 α；最后比较单层 vs 两层 Clos 的网络 BOM、光功耗、排队时延和故障域。这四项决定该提案是架构经济性突破，还是仅把复杂度转移到了巨型 Pod 内。</div>
+</section>
+
+<section id="references" class="refs">
+<h2>参考文献与可复核入口</h2>
+<ol>
+<li id="r01"><b>[R01] Converge Digest｜2026-10-21｜PECC Summit: Broadcom Maps Optical Path to Million-XPU Fabrics.</b> 现场二手报道，支持精确 Pod 数量、单层 Rail 和 LightStream。<a target="_blank" rel="noopener" href="https://convergedigest.com/pecc-summit-broadcom-lightstream-oci-million-xpu-ai-fabrics/">原文</a></li>
+<li id="r02"><b>[R02] Optica｜PECC Summit 2026 议程。</b> Oct 20 Session 3 14:15–15:45，演讲人身份。<a target="_blank" rel="noopener" href="https://www.optica.org/events/industry_events/2026/pecc_summit_optica_apc_photonic_enabled_cloud_computing_summit/schedule/">官方议程</a></li>
+<li id="r03"><b>[R03] Optica｜Near Margalit 官方简介。</b> Optical Systems Division Vice President & GM。<a target="_blank" rel="noopener" href="https://www.optica.org/events/industry_events/2026/pecc_summit_optica_apc_photonic_enabled_cloud_computing_summit/speakers/near_margalit/">官方简介</a></li>
+<li id="r04"><b>[R04] Converge Digest｜2026-03-17｜Optica Executive Forum: Broadcom on Optical Scale-Up.</b> 早期约 1,000 × 1,000 的 Pod 构想及光纤 / radix 讨论。<a target="_blank" rel="noopener" href="https://convergedigest.com/optica-executive-forum-broadcom-on-optical-scale-up/">原文</a></li>
+<li id="r05"><b>[R05] Broadcom｜2026-03-12｜OCI MSA 成立公告。</b> Gen1 4λ×50G NRZ、Gen2 BiDi 400G/方向路线。<a target="_blank" rel="noopener" href="https://www.broadcom.com/company/news/product-releases/optical-scale-up-consortium-established-to-create-an-open-specification-for-ai-infrastructure">官方公告</a></li>
+<li id="r06"><b>[R06] OCI MSA｜200G Optical Compute Interconnect Line Interface Specification v1.0，2026-03-11。</b> PDF 印刷第 5–6 页：结构与 BiDi；印刷第 9 页：PMA 及 4×53.125G NRZ。<a target="_blank" rel="noopener" href="https://oci-msa.org/assets/files/200G-OCI-Optical-Phy-Specification-v1.0.pdf">官方 PDF</a></li>
+<li id="r07"><b>[R07] Broadcom｜2025-06-03｜Tomahawk 6 102.4 Tbps 首发。</b> 512-XPU Scale-up、百万 XPU 网络设计目标。<a target="_blank" rel="noopener" href="https://www.broadcom.com/company/news/product-releases/63146">产品公告</a></li>
+<li id="r08"><b>[R08] Broadcom｜2026-03-12｜TH6 量产供货。</b> 512×200G / 1024×100G、单芯片 512 XPU 单跳能力。<a target="_blank" rel="noopener" href="https://investors.broadcom.com/news-releases/news-release-details/broadcom-now-shipping-worlds-first-1024-tbps-switch-production">官方量产公告</a></li>
+<li id="r09"><b>[R09] Meta Engineering｜2026-10-12｜OCP Summit 2026 网络架构。</b> 102.4T IceCube、Flattened Planar Fabric、72-XPU/Rack 和 ESUN 路线。<a target="_blank" rel="noopener" href="https://engineering.fb.com/2026/10/12/open-source/ocp-summit-2026-powering-ai-with-open-innovations-in-scale-up-scale-out-and-scale-across-networks/">原始工程文章</a></li>
+<li id="r10"><b>[R10] OCP｜2026-03-10｜ESUN 1.0 Specification Released.</b> 4 Byte Header、PFC、CBFC、LLR、多跳网络。<a target="_blank" rel="noopener" href="https://www.opencompute.org/index.php/blog/the-ocp-esun-10-specification-has-been-released">官方说明</a></li>
+<li id="r11"><b>[R11] Optica｜PECC Summit Registration.</b> 会议明确不录制，故公开验证以议程、现场报道和独立标准文档为主。<a target="_blank" rel="noopener" href="https://www.optica.org/events/industry_events/2026/pecc_summit_optica_apc_photonic_enabled_cloud_computing_summit/registration/">官方登记页</a></li>
+</ol>
+<p style="font-size:13px;color:#5e7187"><b>研究边界：</b>截稿 2026-10-27。自绘示意与假设算例均非 Broadcom 官方拓扑；文中的“25 Tbps / XPU”及“32k 光纤”属于演讲报道转述，尚缺原始演示页的定义 / 计量边界。本报告只使用公开资料，不包含用户公司内部数据或保密文档。</p>
+</section>
+</article></div>
+<footer>Research Notes · AI Networking · Generated for research and verification · 2026-10-27</footer>
+</body></html>
