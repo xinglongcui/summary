@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-10-28",
+  "primary_key": "url",
+  "description": "SemiAnalysis 每日精读去重清单；按文章 URL 唯一，日期及标题沿用既有分析记录，新增条目以官方页面核验。",
+  "entries": [
+    {
+      "url": "https://newsletter.semianalysis.com/p/openai-jalapeno-better-than-nvidia",
+      "title": "OpenAI Jalapeño: Better Than Nvidia Blackwell",
+      "published": "2026-08-25",
+      "report": null,
+      "record_source": "historical analysis log"
+    },
+    {
+      "url": "https://newsletter.semianalysis.com/p/computation-and-data-movement-for",
+      "title": "Computation and Data Movement for Inference",
+      "published": "2026-09-21",
+      "report": "reports/2026-10-28-semianalysis-computation-data-movement-inference.html",
+      "record_source": "official page checked 2026-10-28"
+    },
+    {
+      "url": "https://newsletter.semianalysis.com/p/clustermax-30-the-industry-standard",
+      "title": "ClusterMAX 3.0: The Industry Standard GPU Cloud Rating System Returns",
+      "published": "2026-09-23",
+      "report": "reports/2026-10-27-semianalysis-clustermax-3.html",
+      "record_source": "historical analysis log"
+    },
+    {
+      "url": "https://newsletter.semianalysis.com/p/the-chinese-ai-infrastructure-boom",
+      "title": "The Chinese AI Infrastructure Boom: Introducing the SemiAnalysis China Datacenter Model",
+      "published": "2026-09-25",
+      "report": null,
+      "record_source": "historical analysis log"
+    },
+    {
+      "url": "https://newsletter.semianalysis.com/p/intel-panther-lake-teardown",
+      "title": "Intel Panther Lake Teardown",
+      "published": "2026-09-26",
+      "report": "reports/2026-10-26-semianalysis-panther-lake-18a.html",
+      "record_source": "historical analysis log"
+    },
+    {
+      "url": "https://newsletter.semianalysis.com/p/sparse-savings-persistent-demand-inside-glm53",
+      "title": "How GLM5.3 Sparse Attention Affects HBM Memory Usage",
+      "published": "2026-09-28",
+      "report": null,
+      "record_source": "historical analysis log"
+    },
+    {
+      "url": "https://newsletter.semianalysis.com/p/anthropic-subscriptions-offer-5x",
+      "title": "Anthropic Subscriptions Offer 5x+ More Value Than OpenAI",
+      "published": "2026-10-05",
+      "report": null,
+      "record_source": "historical analysis log"
+    },
+    {
+      "url": "https://newsletter.semianalysis.com/p/beijing-will-not-pace-the-frontier",
+      "title": "Beijing Will Not Pace the Frontier: China’s Speed-First AI Safety Regime",
+      "published": "2026-10-08",
+      "report": null,
+      "record_source": "historical analysis log"
+    },
+    {
+      "url": "https://newsletter.semianalysis.com/p/asml-is-building-a-hybrid-bonding",
+      "title": "ASML Is Building a Hybrid Bonding Tool!",
+      "published": "2026-10-15",
+      "report": null,
+      "record_source": "historical analysis log"
+    },
+    {
+      "url": "https://newsletter.semianalysis.com/p/datacenters-2027-the-year-of-acceleration",
+      "title": "Datacenters 2027: The Year of Acceleration",
+      "published": "2026-10-19",
+      "report": null,
+      "record_source": "historical analysis log"
+    },
+    {
+      "url": "https://newsletter.semianalysis.com/p/huawei-deepseek",
+      "title": "The Huawei-DeepSeek Symbiosis",
+      "published": "2026-10-21",
+      "report": null,
+      "record_source": "historical analysis log"
+    },
+    {
+      "url": "https://newsletter.semianalysis.com/p/amazons-trainium-takes-a-strike-at",
+      "title": "Amazon’s Trainium Takes a Strike at the Training King",
+      "published": "2026-10-23",
+      "report": null,
+      "record_source": "historical analysis log"
+    }
+  ]
+}
