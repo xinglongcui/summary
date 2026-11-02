@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "key": "canonical_article_url",
+  "updated_at": "2026-11-02",
+  "count": 17,
+  "articles": [
+    {
+      "published": "2026-08-25",
+      "url": "https://newsletter.semianalysis.com/p/openai-jalapeno-better-than-nvidia",
+      "title": "OpenAI Jalapeño: Better Than Nvidia Blackwell",
+      "analyzed": true
+    },
+    {
+      "published": "2026-09-14",
+      "url": "https://newsletter.semianalysis.com/p/vera-rubin-nvl72-agentic-inference",
+      "title": "Vera Rubin NVL72 Agentic Inference: 67x better Performance per Dollar",
+      "analyzed": true
+    },
+    {
+      "published": "2026-09-14",
+      "url": "https://newsletter.semianalysis.com/p/a-brain-too-big-to-carry-on-device",
+      "title": "A Brain Too Big to Carry — On-Device vs Datacenter Inference",
+      "analyzed": true
+    },
+    {
+      "published": "2026-09-15",
+      "url": "https://newsletter.semianalysis.com/p/everyone-says-datacenter-moratoriums",
+      "title": "Everyone Says Datacenter Moratoriums Are Killing the US Buildout. We disagree",
+      "analyzed": true
+    },
+    {
+      "published": "2026-09-18",
+      "url": "https://newsletter.semianalysis.com/p/engrams-embedding-entendre-codesign",
+      "title": "Engrams Embedding Entendre: Codesign for Efficient DRAM/SSD Offloading",
+      "analyzed": true
+    },
+    {
+      "published": "2026-09-21",
+      "url": "https://newsletter.semianalysis.com/p/computation-and-data-movement-for",
+      "title": "Computation and Data Movement for Inference",
+      "analyzed": true
+    },
+    {
+      "published": "2026-09-23",
+      "url": "https://newsletter.semianalysis.com/p/clustermax-30-the-industry-standard",
+      "title": "ClusterMAX 3.0: The Industry Standard GPU Cloud Rating System Returns",
+      "analyzed": true
+    },
+    {
+      "published": "2026-09-25",
+      "url": "https://newsletter.semianalysis.com/p/the-chinese-ai-infrastructure-boom",
+      "title": "The Chinese AI Infrastructure Boom",
+      "analyzed": true
+    },
+    {
+      "published": "2026-09-26",
+      "url": "https://newsletter.semianalysis.com/p/intel-panther-lake-teardown",
+      "title": "Intel Panther Lake Teardown",
+      "analyzed": true
+    },
+    {
+      "published": "2026-09-28",
+      "url": "https://newsletter.semianalysis.com/p/sparse-savings-persistent-demand-inside-glm53",
+      "title": "How GLM5.3 Sparse Attention Affects HBM Memory Usage",
+      "analyzed": true
+    },
+    {
+      "published": "2026-10-05",
+      "url": "https://newsletter.semianalysis.com/p/anthropic-subscriptions-offer-5x",
+      "title": "Anthropic Subscriptions Offer 5x+ More Value Than OpenAI",
+      "analyzed": true
+    },
+    {
+      "published": "2026-10-08",
+      "url": "https://newsletter.semianalysis.com/p/beijing-will-not-pace-the-frontier",
+      "title": "Beijing Will Not Pace the Frontier",
+      "analyzed": true
+    },
+    {
+      "published": "2026-10-15",
+      "url": "https://newsletter.semianalysis.com/p/asml-is-building-a-hybrid-bonding",
+      "title": "ASML Is Building a Hybrid Bonding Tool!",
+      "analyzed": true
+    },
+    {
+      "published": "2026-10-19",
+      "url": "https://newsletter.semianalysis.com/p/datacenters-2027-the-year-of-acceleration",
+      "title": "Datacenters 2027: The Year of Acceleration",
+      "analyzed": true
+    },
+    {
+      "published": "2026-10-21",
+      "url": "https://newsletter.semianalysis.com/p/huawei-deepseek",
+      "title": "The Huawei-DeepSeek Symbiosis",
+      "analyzed": true
+    },
+    {
+      "published": "2026-10-23",
+      "url": "https://newsletter.semianalysis.com/p/amazons-trainium-takes-a-strike-at",
+      "title": "Amazon’s Trainium Takes a Strike at the Training King",
+      "analyzed": true
+    },
+    {
+      "published": "2026-11-02",
+      "url": "https://newsletter.semianalysis.com/p/gdpx-measuring-frontier-model-capabilities",
+      "title": "GDPx: Measuring Frontier Model Capabilities Across the Most Valuable Domains",
+      "analyzed": true
+    }
+  ]
+}
