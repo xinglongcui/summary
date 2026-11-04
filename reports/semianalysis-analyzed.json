@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "key": "canonical_article_url",
-  "updated_at": "2026-11-03",
-  "count": 18,
+  "updated_at": "2026-11-04",
+  "count": 19,
   "articles": [
     {
       "published": "2026-08-25",
@@ -110,6 +110,12 @@
       "published": "2026-11-02",
       "url": "https://newsletter.semianalysis.com/p/gdpx-measuring-frontier-model-capabilities",
       "title": "GDPx: Measuring Frontier Model Capabilities Across the Most Valuable Domains",
+      "analyzed": true
+    },
+    {
+      "published": "2026-11-03",
+      "url": "https://newsletter.semianalysis.com/p/elon-is-doing-it-again-spacex-will",
+      "title": "Elon Is Doing It Again: SpaceX Will Be The World’s Biggest AI Cloud",
       "analyzed": true
     }
   ]
