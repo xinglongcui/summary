@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "key": "canonical_article_url",
-  "updated_at": "2026-11-04",
-  "count": 19,
+  "updated_at": "2026-11-05",
+  "count": 20,
   "articles": [
     {
       "published": "2026-08-25",
@@ -11,15 +11,21 @@
       "analyzed": true
     },
     {
-      "published": "2026-09-14",
-      "url": "https://newsletter.semianalysis.com/p/vera-rubin-nvl72-agentic-inference",
-      "title": "Vera Rubin NVL72 Agentic Inference: 67x better Performance per Dollar",
+      "published": "2026-09-13",
+      "url": "https://newsletter.semianalysis.com/p/long-live-the-short-king-why-4-hi",
+      "title": "Long Live the Short King: Why 4-hi HBM Wins",
       "analyzed": true
     },
     {
       "published": "2026-09-14",
       "url": "https://newsletter.semianalysis.com/p/a-brain-too-big-to-carry-on-device",
       "title": "A Brain Too Big to Carry — On-Device vs Datacenter Inference",
+      "analyzed": true
+    },
+    {
+      "published": "2026-09-14",
+      "url": "https://newsletter.semianalysis.com/p/vera-rubin-nvl72-agentic-inference",
+      "title": "Vera Rubin NVL72 Agentic Inference: 67x better Performance per Dollar",
       "analyzed": true
     },
     {
