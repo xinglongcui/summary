@@ -1,0 +1,4 @@
+interface:
+  display_name: "头大公司分析"
+  short_description: "按头大的产业、利润与价格框架研究公司，附历史案例和可追溯证据"
+  default_prompt: "使用 $touda-company-analysis 分析指定公司，结合历史框架、实际案例与当前一手资料。"

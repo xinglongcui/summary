@@ -1,0 +1,404 @@
+{
+  "schema_version": 1,
+  "generated": "2026-11-08",
+  "historical_cutoff": "2026-10-25",
+  "scope": "20项精选历史证据，自包含快照；不是全量历史、当期公司事实或成交审计",
+  "source_archive": "头大-蒸馏研究资料包-2026-10-27.zip",
+  "evidence": [
+    {
+      "evidence_id": "TD01",
+      "record_id": "B-O-542708442580107603",
+      "date": "2021-07-02T11:45:00+08:00",
+      "time_basis": "页面显示发布时间",
+      "source_url": "https://www.bilibili.com/opus/542708442580107603",
+      "original_file": "bilibili-collected-text.json",
+      "original_archive": "bilibili-raw-archive.html",
+      "attribution": "归档作者文字；观点与交易均未独立核实",
+      "machine_transcript": false,
+      "excerpts": [
+        {
+          "text": "昨天视频是根据走势判断出锂矿要迎来曙光\n今天消息层面出来的几则消息对锂矿逻辑有加强\n1、三傻销量8000+7000+6000继续新高\n2、byd销量=三傻*2明牌\n3、特斯拉销量3w恢复\n4、川能子公司锂盐厂好像快无米下锅了\n5、上汽集团老总说缺芯马上缓解，大宗也不涨了，导致卡脖子环节只剩下锂矿\n超预期的下游销量叠加超预期的中游嘴炮扩产，而上游建设周期动辄3-4年，我看你锂矿哪里去买，锂矿量价齐声，锂盐破20万指日可待\n完整锂矿格局可以看以下两个视频，没赚到不要紧，看逻辑：\n【正式出坑，聊聊大盘、比亚迪、锂矿格局-哔哩哔哩】\n网页链接​",
+          "char_start": 0,
+          "char_end": 271
+        }
+      ],
+      "text_truncated": false
+    },
+    {
+      "evidence_id": "TD02",
+      "record_id": "B-C-4855832707",
+      "date": "2021-07-06T21:32:29+08:00",
+      "time_basis": "平台Unix时间戳",
+      "source_url": "https://www.bilibili.com/video/BV1Bv411J7Ff/?spm_id_from=333.788#reply4855832707",
+      "original_file": "bilibili-author-comments.json",
+      "original_archive": "bilibili-author-comments.html",
+      "attribution": "归档作者文字；观点与交易均未独立核实",
+      "machine_transcript": false,
+      "excerpts": [
+        {
+          "text": "锂矿最终会够用，但扩展需要时间，需要钱（钱要从股市融）。这两年肯定不够，所以是量价齐升，a股最强逻辑，确定性很好。另外，锂矿翻倍，终端价格仅影响几千元，相信车厂为了抢市场，这两年是可以忍受的。",
+          "char_start": 0,
+          "char_end": 96
+        }
+      ],
+      "text_truncated": false
+    },
+    {
+      "evidence_id": "TD03",
+      "record_id": "B-C-4855851510",
+      "date": "2021-07-06T21:34:38+08:00",
+      "time_basis": "平台Unix时间戳",
+      "source_url": "https://www.bilibili.com/video/BV1Bv411J7Ff/?spm_id_from=333.788#reply4855851510",
+      "original_file": "bilibili-author-comments.json",
+      "original_archive": "bilibili-author-comments.html",
+      "attribution": "归档作者文字；观点与交易均未独立核实",
+      "machine_transcript": false,
+      "excerpts": [
+        {
+          "text": "回复 @莫大韭菜 :但这些逻辑，我在锂矿股底部就在说了，这没有建议买入的意思，股市到处都是机会，没必要追涨几倍的股，风险收益不成正比。",
+          "char_start": 0,
+          "char_end": 67
+        }
+      ],
+      "text_truncated": false
+    },
+    {
+      "evidence_id": "TD04",
+      "record_id": "B-V-BV17g4y1P7Md",
+      "date": "2023-07-05T00:00:00+08:00",
+      "time_basis": "目录上传日期代理；拍摄或直播时间未明确",
+      "source_url": "https://www.bilibili.com/video/BV17g4y1P7Md/?p=1",
+      "original_file": "bilibili-video-archive-manifest.json",
+      "original_archive": "touda-chronology/transcripts/BV17g4y1P7Md.json",
+      "attribution": "作者视频机器转写，未逐秒听校",
+      "machine_transcript": true,
+      "excerpts": [
+        {
+          "text": "首先我们买入的矿产一定是在未来产业中是有大额的应用而且会越来越多的这么一个产业然后它现在是个紧平衡的状态",
+          "char_start": 1426,
+          "char_end": 1478
+        },
+        {
+          "text": "你还要看你的小金属的营收占你的原来的公司营收的大小",
+          "char_start": 3430,
+          "char_end": 3455
+        }
+      ],
+      "text_truncated": false
+    },
+    {
+      "evidence_id": "TD05",
+      "record_id": "XQ-P-334748448",
+      "date": "2025-05-12T12:29:00+08:00",
+      "time_basis": "原归一化日期；省略年份时按采集年2026补齐",
+      "source_url": "https://xueqiu.com/2632831661/334748448",
+      "original_file": "xueqiu-collected-records.json",
+      "original_archive": "xueqiu-raw-archive.html",
+      "attribution": "归档作者文字；观点与交易均未独立核实",
+      "machine_transcript": false,
+      "excerpts": [
+        {
+          "text": "$赣锋锂业(SZ002460)$ $天齐锂业(SZ002466)$ $融捷股份(SZ002192)$ 说下至今锂矿的思考 上轮锂矿莫拟盘赚了小2000万 导致我后来玩锑矿，非常能抗 爱涨不涨，亏光拉倒 同理的，这些上一轮赚海了的锂矿公司也会有相似情况 因此这轮肯定非常惨烈才能有稍许出清 而且锂价稍微一涨，又全回来了 因为没把人家搞痛嘛，大家都贼心不死，那从供给端分析就没有大周期可言 除非，需求端出现了2020年那样的爆发 这种爆发目前看，要么是出海，要么是固态电池 但出海被汽车船卡，固态电池最乐观也得2027在高端车量产，都还早 有可能见到业绩的时间去2028-30年了，还不如爆单的军工股",
+          "char_start": 0,
+          "char_end": 298
+        }
+      ],
+      "text_truncated": false
+    },
+    {
+      "evidence_id": "TD06",
+      "record_id": "XQ-P-347998146",
+      "date": "2025-08-20T14:26:00+08:00",
+      "time_basis": "原归一化日期；省略年份时按采集年2026补齐",
+      "source_url": "https://xueqiu.com/2632831661/347998146",
+      "original_file": "xueqiu-collected-records.json",
+      "original_archive": "xueqiu-raw-archive.html",
+      "attribution": "归档作者文字；观点与交易均未独立核实",
+      "machine_transcript": false,
+      "excerpts": [
+        {
+          "text": "为什么说供给故事都是鬼故事 需求股市才是梦幻故事 人家产业上的参与者 不比我们清楚供给情况 人家停工就是未来不赚钱 未来能赚钱随时复工 这产能叫有效退出么？ 根本不是 忘了锂矿上一波怎么来的 锂原来干啥你知道不？ 做陶瓷，治精神病的！ 你没听错！ 然后为什么锂价格会超乎想象的涨 本质原因是那帮开矿的土老板，都开燃油车！ 不知道新能源车的厉害 现在大家都知道新能源车的厉害了 谁会真退出 超额收益在哪里我请问？ 同理，你们可以分析其他金属 必须有需求的新故事 否则不玩！",
+          "char_start": 0,
+          "char_end": 235
+        }
+      ],
+      "text_truncated": false
+    },
+    {
+      "evidence_id": "TD07",
+      "record_id": "XQ-P-362486904",
+      "date": "2025-11-20T16:28:00+08:00",
+      "time_basis": "原归一化日期；省略年份时按采集年2026补齐",
+      "source_url": "https://xueqiu.com/2632831661/362486904",
+      "original_file": "xueqiu-collected-records.json",
+      "original_archive": "xueqiu-raw-archive.html",
+      "attribution": "归档作者文字；观点与交易均未独立核实",
+      "machine_transcript": false,
+      "excerpts": [
+        {
+          "text": "回复 @youyull_哎呀 : 感觉你说的前后有矛盾，如果磷矿品位下降，供需更紧张了。磷矿如果被化肥卡住价格，那磷矿厂就更多的转向磷酸铁，磷酸铁是不限价的。磷酸铁现在亏损，那就是在出清，更是布局的好机会，因为不亏时就是反转了，储能全行业不可能出现上中下游全爆赚，唯独磷酸铁一个中间亏损的情况",
+          "char_start": 0,
+          "char_end": 146
+        }
+      ],
+      "text_truncated": false
+    },
+    {
+      "evidence_id": "TD08",
+      "record_id": "XXQ-2095718294840422400",
+      "date": "2026-09-04T11:39:12.710000+08:00",
+      "time_basis": "平台created_at；正文是采集时可见版本",
+      "source_url": null,
+      "original_file": "xiaxingqiu-source/author-records357.json",
+      "original_archive": "xiaxingqiu-author-archive.html#X0655",
+      "attribution": "归档作者文字；观点与交易均未独立核实",
+      "machine_transcript": false,
+      "excerpts": [
+        {
+          "text": "只因你们捧我场来到这里\n我才会再说氦气\n否则我是不想说的\n因为我毕竟成本不在这\n不喜欢吹涨起来的东西\n我只说我为什么不卖\n因为我认为氦气目前的业绩体现\n大多还是粗氦\n6n 氦气目前散单价还在 3-4000\n长协在 2-3000\n可以看出长协价是便宜且滞后的\n这种滞后效应需要一个长周期的价格高位徘徊才能消除\n如果 6n 像 5n4n 那样走个 A\n长协甚至还没反应过来就结束了\n那自然是一点业绩都没有\n不然为啥叫长协呢\n就是为了抑平价格波动呀\n好在 6n 氦气维持在了一个相对的高位。\n然后就是国内禁止氦气出口\n那你说是重视不是重视？战略眼光与国同频\n也说明确实有人往外倒卖\n既然国内不缺 6N 纯化能力\n那倒卖的可能既有气球也有 6N，因为 6n 贵呀，国内国外都贵\n这就导致了 6N 氦气确实是跌了一点，不能出口了嘛\n但关键是 6N 的业绩压根没传到氦气公司呢\n假设你是晶圆厂\n卡塔尔一断供\n你是不是也会去抢气\n往年你可是强势买方\n卖气的都是孙子\n周期和价格肯定都是利于买方的\n所以业绩释放天然就快不了\n长协价格自然需要长周期才能上涨\n能不能长期上涨看供需\n供给好分析，卡塔尔锁死，美俄缓扩产，还有 1-2 个小国有零星产能释放\n但需求可是爆炸性的增长\n和当年做锂的区别就是在这里\n需求不会因为普及率到增长速率的拐点\n而匹配不了供给增速\n看起来需求是无上限的\n甚至还在加速增长\n昨天美国又大范围宕机了\n国内各种模型的产品力也在质变\n我都不说 ai 赋能航天、量子、核聚变这种更远期的氦需求了\n就短期看现在 ai agent 应用就够了\nai 必然会改变世界的一切\n因为它已经改变了我周围的一切\n而我怕啥呢？\n怕亏钱？\n怕个屁又不怎么花\n我只怕错过 ai 改变世界的进程\n回头小孩问我\n爸爸你当年不是天天跟我吟唱\nai 改变世界 \nai 有巨大投资价值\n你明明说对了呀\n可我们家为啥还是没多少钱呢？",
+          "char_start": 0,
+          "char_end": 800
+        }
+      ],
+      "text_truncated": false
+    },
+    {
+      "evidence_id": "TD09",
+      "record_id": "XXQ-2095729414628192256",
+      "date": "2026-09-04T12:23:23.874000+08:00",
+      "time_basis": "平台created_at；正文是采集时可见版本",
+      "source_url": null,
+      "original_file": "xiaxingqiu-source/author-records357.json",
+      "original_archive": "xiaxingqiu-author-archive.html#X0665",
+      "attribution": "归档作者文字；观点与交易均未独立核实",
+      "machine_transcript": false,
+      "excerpts": [
+        {
+          "text": "价格不是迷 3000 有的。迷的是合同怎么签的，以及产量",
+          "char_start": 0,
+          "char_end": 28
+        }
+      ],
+      "text_truncated": false
+    },
+    {
+      "evidence_id": "TD10",
+      "record_id": "B-V-BV1zg411q7ND",
+      "date": "2022-11-17T22:00:00+08:00",
+      "time_basis": "标题中的直播场次时间；并非精确开播秒数",
+      "source_url": "https://www.bilibili.com/video/BV1zg411q7ND/?p=1",
+      "original_file": "bilibili-video-archive-manifest.json",
+      "original_archive": "touda-chronology/transcripts/BV1zg411q7ND.json",
+      "attribution": "作者视频机器转写，未逐秒听校",
+      "machine_transcript": true,
+      "excerpts": [
+        {
+          "text": "我主要看他的市值看市值看的比较多",
+          "char_start": 3050,
+          "char_end": 3066
+        },
+        {
+          "text": "你会去分析这个公司在这个行业里头的一个是不是领导地位然后这个行业的整体的这个未来的这个市场有多大然后他应该合理获得一个多少的利润然后他的市值应该钱在市值能到多大",
+          "char_start": 3068,
+          "char_end": 3148
+        },
+        {
+          "text": "如果它变成了实实在在的业绩出来了这个产能 这个电池 它的真正的量产了那样子咱们才可能都赚钱",
+          "char_start": 2317,
+          "char_end": 2362
+        }
+      ],
+      "text_truncated": false
+    },
+    {
+      "evidence_id": "TD11",
+      "record_id": "B-O-1013180349887283202",
+      "date": "2024-12-21T07:37:00+08:00",
+      "time_basis": "页面显示发布时间",
+      "source_url": "https://www.bilibili.com/opus/1013180349887283202",
+      "original_file": "bilibili-collected-text.json",
+      "original_archive": "bilibili-raw-archive.html",
+      "attribution": "归档作者文字；观点与交易均未独立核实",
+      "machine_transcript": false,
+      "excerpts": [
+        {
+          "text": "鉴于昨日大家温暖到我了\n今天我也送个温暖\n图一解释了我当时为什么买某ai眼镜（别说名字！也别买！）\n图二不解释\n记住：\n无论你多么价投，多么看重基本面\nK线对决定买卖的综合权重都不应低于50%！\nK线高了，有逻辑未必涨，可以考虑卖！\nK线低了，无逻辑未必跌，可以考虑买！\n注意我说的是未必，可以考虑，怎么把这种不确定变成确定呢？这时候再看基本面和景气度！打打算盘，拉拉excel，看看值不值得博（最难环节，我的核心竞争力在此）\n只有这样，才能做到亏小钱，赚大钱！\n其实当时快慢船也是类似的，虽然大逻辑我是将信将疑的，但能确定是k线足够低，行业在反转，至于反转高度我不确定，导致赚钱容易拿不住\n因此我当时说过，这股我不担心亏钱，担心的是赚不到大钱！\n不过不要紧，目前456轮的大逻辑，我可是深信不疑的",
+          "char_start": 0,
+          "char_end": 349
+        }
+      ],
+      "text_truncated": false
+    },
+    {
+      "evidence_id": "TD12",
+      "record_id": "B-C-4816770133",
+      "date": "2021-06-30T08:37:47+08:00",
+      "time_basis": "平台Unix时间戳",
+      "source_url": "https://www.bilibili.com/opus/541777864898830047#reply4816770133",
+      "original_file": "bilibili-author-comments.json",
+      "original_archive": "bilibili-author-comments.html",
+      "attribution": "归档作者文字；观点与交易均未独立核实",
+      "machine_transcript": false,
+      "excerpts": [
+        {
+          "text": "我自己也思考蛮久的，呷哺我买入前去了三次，分别是万达乐多港呷哺和颐和园凑凑。另外大众点评可以看看呷哺、凑凑、海底捞的差距也不大，我去吃的这几家店都没有点评好评给优惠或送东西的政策\n\n其实我在这几次前一直都是是海底捞的，我认为二者差距不大，海底捞原来是因为店少服务有噱头再加上食材不掉链子，导致排队，越排越火，现在猛得开了1000家店，大部分也不排队了，不排队的海底捞就没那么神奇了，人就是心理因素，喜茶如果不排队我也觉得也就一般，都是饥饿营销\n\n呷哺看好他的逻辑是火锅这个赛道是中国餐饮最好的赛道，是可以无限扩张下去的，把桌子降下来，可以卖非餐时间卖点冰激凌或奶茶，她家奶茶不错的，如果注入上市公司，你看看最近ipo的几家奶茶估值。当然这个中国麦当劳或者中国星巴克的预期，只是长持的一个梦想，就跟byd称霸世界一样，在40的时候最乐观的人也只是相信国运，实现路径神仙也想不清，但无所谓呀，实现了就是几千亿一万亿，实现不了顺利开到3-4000千家，也有千亿市值，这就是十倍的空间，我买股没有5-10倍空间，提不起兴趣的\n\n炒股是要基本面结合价格的，现在呷哺80亿，海底捞2000亿，我肯定无脑选呷哺，他俩市值会慢慢接近的\n\n8块钱呷哺大家都踩，27的呷哺大家夸上天，公司还是那个公司，味道还是那个味道，变得是股价和被支配的情绪",
+          "char_start": 0,
+          "char_end": 562
+        }
+      ],
+      "text_truncated": false
+    },
+    {
+      "evidence_id": "TD13",
+      "record_id": "B-C-4724942343",
+      "date": "2021-06-14T10:42:50+08:00",
+      "time_basis": "平台Unix时间戳",
+      "source_url": "https://www.bilibili.com/video/BV1Vo4y1y7Gv/?spm_id_from=333.788#reply4724942343",
+      "original_file": "bilibili-author-comments.json",
+      "original_archive": "bilibili-author-comments.html",
+      "attribution": "归档作者文字；观点与交易均未独立核实",
+      "machine_transcript": false,
+      "excerpts": [
+        {
+          "text": "回复 @Electric77 :长期不看好，因为电动车迭代越来越快，僵化的国企生存空间很小。近期有一定炒作价值（华为），但也不如小康。目前在三重顶区域，突破的话可能再凸凸一阵，破五周线的话，就要考虑跑路了。总之，不是太看好。",
+          "char_start": 0,
+          "char_end": 112
+        }
+      ],
+      "text_truncated": false
+    },
+    {
+      "evidence_id": "TD14",
+      "record_id": "XXQ-2088128375133581312",
+      "date": "2026-08-14T12:59:34.838000+08:00",
+      "time_basis": "平台created_at；正文是采集时可见版本",
+      "source_url": null,
+      "original_file": "xiaxingqiu-source/author-records357.json",
+      "original_archive": "xiaxingqiu-author-archive.html#X0309",
+      "attribution": "归档作者文字；观点与交易均未独立核实",
+      "machine_transcript": false,
+      "excerpts": [
+        {
+          "text": "现在刷虾星球的广场\n已经要比我刷雪球大号的关注列表有营养\n就是我担心我们的思维过于集中\n陷入信息茧房\n因此我们社区的思路应该要发散\n对不同观点要包容\n千万别说和我们目前观点不一样就攻击\n这是文化建设层面的东西\n低门槛发言论坛\n唱空大家可以怀疑是托\n但是高门槛的论坛\n唱空是非常值得鼓励的\n这才有百家争鸣的感觉\n大家继承我的思路的同时\n还应该进行一定的发散\n如果我启发到我就更好了\n所以现在我需要灵魂拷问了\nAi 医疗这一波到底炒情绪还是炒业绩？谁懂？？\n我底部没卖的原因是因为，无论炒情绪还是炒业绩，他总归是要炒的",
+          "char_start": 0,
+          "char_end": 257
+        }
+      ],
+      "text_truncated": false
+    },
+    {
+      "evidence_id": "TD15",
+      "record_id": "B-C-5349509307",
+      "date": "2021-09-06T22:03:35+08:00",
+      "time_basis": "平台Unix时间戳",
+      "source_url": "https://www.bilibili.com/opus/567354352195956570#reply5349509307",
+      "original_file": "bilibili-author-comments.json",
+      "original_archive": "bilibili-author-comments.html",
+      "attribution": "归档作者文字；观点与交易均未独立核实",
+      "machine_transcript": false,
+      "excerpts": [
+        {
+          "text": "破五日线跑一点，破五周线再跑一点，破五月线一定要清仓。",
+          "char_start": 0,
+          "char_end": 27
+        }
+      ],
+      "text_truncated": false
+    },
+    {
+      "evidence_id": "TD16",
+      "record_id": "B-C-5349635788",
+      "date": "2021-09-06T22:21:21+08:00",
+      "time_basis": "平台Unix时间戳",
+      "source_url": "https://www.bilibili.com/opus/567354352195956570#reply5349635788",
+      "original_file": "bilibili-author-comments.json",
+      "original_archive": "bilibili-author-comments.html",
+      "attribution": "归档作者文字；观点与交易均未独立核实",
+      "machine_transcript": false,
+      "excerpts": [
+        {
+          "text": "回复 @吴嘉伦 :低位股不用看这些，桌上刻格局，后背刺价值投资。",
+          "char_start": 0,
+          "char_end": 32
+        }
+      ],
+      "text_truncated": false
+    },
+    {
+      "evidence_id": "TD17",
+      "record_id": "B-C-5349646329",
+      "date": "2021-09-06T22:22:08+08:00",
+      "time_basis": "平台Unix时间戳",
+      "source_url": "https://www.bilibili.com/opus/567354352195956570#reply5349646329",
+      "original_file": "bilibili-author-comments.json",
+      "original_archive": "bilibili-author-comments.html",
+      "attribution": "归档作者文字；观点与交易均未独立核实",
+      "machine_transcript": false,
+      "excerpts": [
+        {
+          "text": "回复 @莫大韭菜 :已经涨好几倍趋势完全走出来的股才这么玩",
+          "char_start": 0,
+          "char_end": 29
+        }
+      ],
+      "text_truncated": false
+    },
+    {
+      "evidence_id": "TD18",
+      "record_id": "XXQ-2113481694878117888",
+      "date": "2026-10-23T12:04:37.307000+08:00",
+      "time_basis": "平台created_at；正文是采集时可见版本",
+      "source_url": null,
+      "original_file": "xiaxingqiu-source/author-records357.json",
+      "original_archive": "xiaxingqiu-author-archive.html#X1126",
+      "attribution": "归档作者文字；观点与交易均未独立核实",
+      "machine_transcript": false,
+      "excerpts": [
+        {
+          "text": "昨天有人问莫大你这几个月忙其他事情，包括一级市场也好，ai coding 也好，所以没来得及躲开这波回撤？\n\n刚问完我愣一下了，是这样吗？如果是这样，还是能够找理由挽尊一下的，但我仔细回忆似乎不是这样\n\n每次暴跌我几乎都会在社区发言，无论再忙，股票走势还是关注的，如果关注走势却没触发止盈操作，恰恰不是不在意股票，而是太在意，导致没舍得走。要说赚也赚了不少，也达到了阶段性的目标，为啥没走呢？这还不是入戏太深？当你感觉新世界快来的时候，你想抓住所有能抓住的东西。\n\n那你说这里我可能走么？不可能的。\n\n但你说有遗憾么？当然有遗憾。教训不是在顶部没有完全逃顶，而是我没有遵守一直以来的操作惯例，该提醒大家的我其实都提醒了。但我自己没这么做。\n\n如果赚 2-3 倍高点破位，把本拿回来，不用全抛，跑 1/5，现在也不至于这么恶心。 过去几个月只是一级市场需要钱被动走了一些，这个相对我当时的仓位太少了。\n\n另外就是仓位风格逐渐一致后的，窒息感，几乎让我重新回到 18-19 超重仓拿锂矿的最难时间段。相同的位置，相同的 k 线，类似的逻辑，是否仍有当年的好运我也不知道。\n\n只能等迷雾破散后，看是怪物还是救兵来迎接你了。",
+          "char_start": 0,
+          "char_end": 508
+        }
+      ],
+      "text_truncated": false
+    },
+    {
+      "evidence_id": "TD19",
+      "record_id": "B-C-5398440799",
+      "date": "2021-09-14T23:11:47+08:00",
+      "time_basis": "平台Unix时间戳",
+      "source_url": "https://www.bilibili.com/video/BV1L44y1h79F/?spm_id_from=333.788#reply5398440799",
+      "original_file": "bilibili-author-comments.json",
+      "original_archive": "bilibili-author-comments.html",
+      "attribution": "归档作者文字；观点与交易均未独立核实",
+      "machine_transcript": false,
+      "excerpts": [
+        {
+          "text": "回复 @发牌手开始拉黑控评了 :你要明白一个逻辑，我要证伪技术无用论，只需要一个特例即可，何况还是我实实在在做t赚钱的例子，并不是我没有更多例子，而是没必要再举例了。",
+          "char_start": 0,
+          "char_end": 83
+        }
+      ],
+      "text_truncated": false
+    },
+    {
+      "evidence_id": "TD20",
+      "record_id": "XXQ-2088131830183112704",
+      "date": "2026-08-14T13:13:18.586000+08:00",
+      "time_basis": "平台created_at；正文是采集时可见版本",
+      "source_url": null,
+      "original_file": "xiaxingqiu-source/author-records357.json",
+      "original_archive": "xiaxingqiu-author-archive.html#X0311",
+      "attribution": "归档作者文字；观点与交易均未独立核实",
+      "machine_transcript": false,
+      "excerpts": [
+        {
+          "text": "因为有板块效应，这波就算炒情绪，也是接近商业航天级别的。要达到新能源级别，业绩要衔接好，且行且看。",
+          "char_start": 0,
+          "char_end": 49
+        }
+      ],
+      "text_truncated": false
+    }
+  ]
+}
