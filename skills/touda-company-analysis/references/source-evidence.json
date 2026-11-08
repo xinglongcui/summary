@@ -9,7 +9,7 @@
       "evidence_id": "TD01",
       "record_id": "B-O-542708442580107603",
       "date": "2021-07-02T11:45:00+08:00",
-      "time_basis": "页面显示发布时间",
+      "time_basis": "归档页面明确显示年份；未使用补年推定",
       "source_url": "https://www.bilibili.com/opus/542708442580107603",
       "original_file": "bilibili-collected-text.json",
       "original_archive": "bilibili-raw-archive.html",
@@ -22,7 +22,9 @@
           "char_end": 271
         }
       ],
-      "text_truncated": false
+      "text_truncated": false,
+      "original_display_date": "2021年07月02日 11:45",
+      "content_updated_at": null
     },
     {
       "evidence_id": "TD02",
@@ -41,7 +43,17 @@
           "char_end": 96
         }
       ],
-      "text_truncated": false
+      "text_truncated": false,
+      "direct_context": {
+        "record_id": "B-C-4855374312",
+        "speaker": "绘佳之路",
+        "speaker_id": "66631602",
+        "date": "2021-07-06T12:22:19.000Z",
+        "source_url": "https://www.bilibili.com/video/BV1Bv411J7Ff/?spm_id_from=333.788#reply4855374312",
+        "text": "稀有矿涨起来长期看其实是利空新能源汽车，因为看真正的本质，是每个买车的消费者之后都选择买新能源车而不是传统汽车，这是根本的根本，新能源它并不是概念最后还是要造福群众。国内传统汽车有3亿多量。而新能源汽车现在存量就几百万。才热一下就产能不足矿难了，那么是否可以说以后可能因为材料问题导致新能源车扩张缓慢。这无疑对新能源车发展很不利。而且说搞新能源车的小米现在也没任何动静。目前泡沫大 ，估值消化慢。如果2个月内有性价比特高的明星新能源车问世，可以很好消化估值，新能源还会热一段时间，要是没有 ，这次泡沫也就破了。但是新能源汽车它是历史必然的 ，以后还是会继续起来。",
+        "is_author_self_followup": false,
+        "role": "直接上文；独立归属，不能自动当成本人观点"
+      }
     },
     {
       "evidence_id": "TD03",
@@ -60,7 +72,17 @@
           "char_end": 67
         }
       ],
-      "text_truncated": false
+      "text_truncated": false,
+      "direct_context": {
+        "record_id": "B-C-4855832707",
+        "speaker": "莫大韭菜",
+        "speaker_id": "525121722",
+        "date": "2021-07-06T13:32:29.000Z",
+        "source_url": "https://www.bilibili.com/video/BV1Bv411J7Ff/?spm_id_from=333.788#reply4855832707",
+        "text": "锂矿最终会够用，但扩展需要时间，需要钱（钱要从股市融）。这两年肯定不够，所以是量价齐升，a股最强逻辑，确定性很好。另外，锂矿翻倍，终端价格仅影响几千元，相信车厂为了抢市场，这两年是可以忍受的。",
+        "is_author_self_followup": true,
+        "role": "直接上文；独立归属，不能自动当成本人观点"
+      }
     },
     {
       "evidence_id": "TD04",
@@ -90,7 +112,7 @@
       "evidence_id": "TD05",
       "record_id": "XQ-P-334748448",
       "date": "2025-05-12T12:29:00+08:00",
-      "time_basis": "原归一化日期；省略年份时按采集年2026补齐",
+      "time_basis": "归档页面明确显示年份；所示为修改时间，首次发表时间未知",
       "source_url": "https://xueqiu.com/2632831661/334748448",
       "original_file": "xueqiu-collected-records.json",
       "original_archive": "xueqiu-raw-archive.html",
@@ -103,13 +125,15 @@
           "char_end": 298
         }
       ],
-      "text_truncated": false
+      "text_truncated": false,
+      "original_display_date": "修改于2025-05-12 12:29",
+      "content_updated_at": null
     },
     {
       "evidence_id": "TD06",
       "record_id": "XQ-P-347998146",
       "date": "2025-08-20T14:26:00+08:00",
-      "time_basis": "原归一化日期；省略年份时按采集年2026补齐",
+      "time_basis": "归档页面明确显示年份；未使用补年推定",
       "source_url": "https://xueqiu.com/2632831661/347998146",
       "original_file": "xueqiu-collected-records.json",
       "original_archive": "xueqiu-raw-archive.html",
@@ -122,13 +146,15 @@
           "char_end": 235
         }
       ],
-      "text_truncated": false
+      "text_truncated": false,
+      "original_display_date": "2025-08-20 14:26",
+      "content_updated_at": null
     },
     {
       "evidence_id": "TD07",
       "record_id": "XQ-P-362486904",
       "date": "2025-11-20T16:28:00+08:00",
-      "time_basis": "原归一化日期；省略年份时按采集年2026补齐",
+      "time_basis": "归档页面明确显示年份；所示为修改时间，首次发表时间未知",
       "source_url": "https://xueqiu.com/2632831661/362486904",
       "original_file": "xueqiu-collected-records.json",
       "original_archive": "xueqiu-raw-archive.html",
@@ -141,7 +167,9 @@
           "char_end": 146
         }
       ],
-      "text_truncated": false
+      "text_truncated": false,
+      "original_display_date": "修改于2025-11-20 16:28",
+      "content_updated_at": null
     },
     {
       "evidence_id": "TD08",
@@ -160,7 +188,10 @@
           "char_end": 800
         }
       ],
-      "text_truncated": false
+      "text_truncated": false,
+      "original_display_date": null,
+      "content_updated_at": "2026-09-04T03:45:28.782Z",
+      "version_note": "所附正文为采集可见版本，不能自动回填首次创建时刻"
     },
     {
       "evidence_id": "TD09",
@@ -179,7 +210,10 @@
           "char_end": 28
         }
       ],
-      "text_truncated": false
+      "text_truncated": false,
+      "original_display_date": null,
+      "content_updated_at": "2026-09-04T04:23:23.874Z",
+      "version_note": "所附正文为采集可见版本，不能自动回填首次创建时刻"
     },
     {
       "evidence_id": "TD10",
@@ -214,7 +248,7 @@
       "evidence_id": "TD11",
       "record_id": "B-O-1013180349887283202",
       "date": "2024-12-21T07:37:00+08:00",
-      "time_basis": "页面显示发布时间",
+      "time_basis": "归档页面明确显示年份；未使用补年推定",
       "source_url": "https://www.bilibili.com/opus/1013180349887283202",
       "original_file": "bilibili-collected-text.json",
       "original_archive": "bilibili-raw-archive.html",
@@ -227,7 +261,9 @@
           "char_end": 349
         }
       ],
-      "text_truncated": false
+      "text_truncated": false,
+      "original_display_date": "2024年12月21日 07:37",
+      "content_updated_at": null
     },
     {
       "evidence_id": "TD12",
@@ -246,7 +282,17 @@
           "char_end": 562
         }
       ],
-      "text_truncated": false
+      "text_truncated": false,
+      "direct_context": {
+        "record_id": "B-C-4816371087",
+        "speaker": "宅居浮游生物",
+        "speaker_id": "1594526",
+        "date": "2021-06-29T19:32:32.000Z",
+        "source_url": "https://www.bilibili.com/opus/541777864898830047#reply4816371087",
+        "text": "不炒股学生，谈谈体验。在昌平读书，外出实践出于好奇吃了一顿呷哺呷哺。周日来的，别说排队，午餐饭点人都不超过五个。价格高，味道差（也可能是我本人比较挑），一个人吃了百来块但是完全没有尝到想吃的味道，服务员也爱搭不理。\n这其中有些是门店因素，有些是品牌因素（服务有没有统一培训，定价合不合理，菜品质量如何），客观地说很难通过一家店的体验来判别整个品牌（对于up主的体验也是）。\n因此我去网上搜了下，发现许多言论也和我有相同的体会：价格高（而且不断提价），服务差，菜品毫无进步（很多老客甚至觉得下降）。其实我个人最大的感受也是：不可能来吃第二次。这个时代很大，花同样的钱，我能得到数倍的体验，为什么要来这？因为我想吃火锅吗，餐饮的竞争可不止局限于火锅，火锅店A不好吃我就去吃别的，不会因为火锅店B比他更差而去吃A。\n再谈谈凑凑，还没去吃过，但大部分朋友（年龄层都是在读大学生）都说好吃实惠，而且有些还会外卖点他家奶茶。很难让人想象是同一个公司。\n\n关于门店数，业绩什么的我没有调查，所以具体情况如果up主有调查还是要小心up主\n不过本文也没提那些，所以就就着文中的谈谈：1.刚才说过了一两家门店很难体现太多，不同的位置，不同的店差别太大，还是得综合网上所有的信息，以及一些品牌的指标，门店数之类的，业绩之类的\n2.中国麦当劳我真的很想吐槽啊，它的价格和服务可告诉我它并不是这么给自己定位的…\n3.火锅也不只是食材，汤底难吃一吃就明白，酱料也是，而且如果不拼食材难道应该拼服务吗，再者同样的价格他的食材真的比别人好吗很难令人信服\n4.关于中国麦当劳那点，突然想到是否开店开的多自然会形成品牌，但这并不意味着就能成为麦当劳肯德基，炸鸡快餐店是一种独特的区别于常规中餐的快餐西食，火锅要吃很久，对于沉浸式体验来说他根本没有吸引我的点，甚至会刻意避开，其实我到现在也想不到他和海底捞怎么比，浮现在自己脑海里的可能就是海底捞排队要好久…\n\n（以上这些都是想补充一点视角，非杠勿吵理性讨论，其实我一直也蛮好奇为什么up真的看好呷哺呷哺的，不过没有找到确切讲解的某期视频）",
+        "is_author_self_followup": false,
+        "role": "直接上文；独立归属，不能自动当成本人观点"
+      }
     },
     {
       "evidence_id": "TD13",
@@ -265,7 +311,17 @@
           "char_end": 112
         }
       ],
-      "text_truncated": false
+      "text_truncated": false,
+      "direct_context": {
+        "record_id": "B-C-4709239062",
+        "speaker": "UC抗争者小马哥",
+        "speaker_id": "244749728",
+        "date": "2021-06-11T09:39:13.000Z",
+        "source_url": "https://www.bilibili.com/video/BV1Vo4y1y7Gv/?spm_id_from=333.788#reply4709239062",
+        "text": "可以聊聊三一吗[呆]",
+        "is_author_self_followup": false,
+        "role": "直接上文；独立归属，不能自动当成本人观点"
+      }
     },
     {
       "evidence_id": "TD14",
@@ -284,7 +340,10 @@
           "char_end": 257
         }
       ],
-      "text_truncated": false
+      "text_truncated": false,
+      "original_display_date": null,
+      "content_updated_at": "2026-08-20T02:30:48.853Z",
+      "version_note": "所附正文为采集可见版本，不能自动回填首次创建时刻"
     },
     {
       "evidence_id": "TD15",
@@ -303,7 +362,17 @@
           "char_end": 27
         }
       ],
-      "text_truncated": false
+      "text_truncated": false,
+      "direct_context": {
+        "record_id": "B-C-5349432876",
+        "speaker": "百月不如一鑫",
+        "speaker_id": "48041848",
+        "date": "2021-09-06T13:51:19.000Z",
+        "source_url": "https://www.bilibili.com/opus/567354352195956570#reply5349432876",
+        "text": "莫大川能你大概会守多久才撤，想学一下莫大的原则",
+        "is_author_self_followup": false,
+        "role": "直接上文；独立归属，不能自动当成本人观点"
+      }
     },
     {
       "evidence_id": "TD16",
@@ -322,7 +391,17 @@
           "char_end": 32
         }
       ],
-      "text_truncated": false
+      "text_truncated": false,
+      "direct_context": {
+        "record_id": "B-C-5349616016",
+        "speaker": "吴嘉伦",
+        "speaker_id": "431536760",
+        "date": "2021-09-06T14:17:34.000Z",
+        "source_url": "https://www.bilibili.com/opus/567354352195956570#reply5349616016",
+        "text": "回复 @莫大韭菜 :船舶已经破了一点五日线",
+        "is_author_self_followup": false,
+        "role": "直接上文；独立归属，不能自动当成本人观点"
+      }
     },
     {
       "evidence_id": "TD17",
@@ -341,7 +420,17 @@
           "char_end": 29
         }
       ],
-      "text_truncated": false
+      "text_truncated": false,
+      "direct_context": {
+        "record_id": "B-C-5349635788",
+        "speaker": "莫大韭菜",
+        "speaker_id": "525121722",
+        "date": "2021-09-06T14:21:21.000Z",
+        "source_url": "https://www.bilibili.com/opus/567354352195956570#reply5349635788",
+        "text": "回复 @吴嘉伦 :低位股不用看这些，桌上刻格局，后背刺价值投资。",
+        "is_author_self_followup": true,
+        "role": "直接上文；独立归属，不能自动当成本人观点"
+      }
     },
     {
       "evidence_id": "TD18",
@@ -360,7 +449,10 @@
           "char_end": 508
         }
       ],
-      "text_truncated": false
+      "text_truncated": false,
+      "original_display_date": null,
+      "content_updated_at": "2026-10-23T04:04:37.307Z",
+      "version_note": "所附正文为采集可见版本，不能自动回填首次创建时刻"
     },
     {
       "evidence_id": "TD19",
@@ -379,7 +471,17 @@
           "char_end": 83
         }
       ],
-      "text_truncated": false
+      "text_truncated": false,
+      "direct_context": {
+        "record_id": "B-C-5398421722",
+        "speaker": "管制烧鸭",
+        "speaker_id": "384720885",
+        "date": "2021-09-14T15:09:15.000Z",
+        "source_url": "https://www.bilibili.com/video/BV1L44y1h79F/?spm_id_from=333.788#reply5398421722",
+        "text": "回复 @莫大韭菜 :确实我是找了一个特例，但这个指标实在是up主或者自媒体挂嘴边最多的一个指标，群众基础大所以拿这个举例\n其实我第一条评论没说要证明技术没用，我的观点是“个例特征有效不代表技术有用”所以我举例了“个例特征失效的例子和常年数据失效的例子”\n我没法证明技术无用，也没想证明技术没用，同时你也没法证明到技术有用，这里我们只能效果中立\n但希望我的言论能反对macd金叉这个指标为单一使用情况下的高胜率证伪",
+        "is_author_self_followup": false,
+        "role": "直接上文；独立归属，不能自动当成本人观点"
+      }
     },
     {
       "evidence_id": "TD20",
@@ -398,7 +500,10 @@
           "char_end": 49
         }
       ],
-      "text_truncated": false
+      "text_truncated": false,
+      "original_display_date": null,
+      "content_updated_at": "2026-08-14T05:13:18.586Z",
+      "version_note": "所附正文为采集可见版本，不能自动回填首次创建时刻"
     }
   ]
 }
